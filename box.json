@@ -1,0 +1,27 @@
+{
+    "name":"Preside Extension: S3 Storage Provider",
+    "type":"preside-extensions",
+    "version":"VERSION_NUMBER",
+    "location":"https://s3.eu-west-2.amazonaws.com/pixl8-public-packages/s3-storage-provider/DOWNLOAD_LOCATION",
+    "private":false,
+    "author":"Pixl8 Interactive",
+    "directory":"application/extensions",
+    "repository":{
+        "type":"git",
+        "URL":"https://github.com/pixl8/preside-ext-s3-storage-provider"
+    },
+    "slug":"preside-ext-s3-storage-provider",
+    "projectURL":"https://github.com/pixl8/preside-ext-s3-storage-provider",
+    "ignore":[
+        ".git/*",
+        ".gitignore",
+        ".travis.yml",
+        ".twgit_features_subject"
+    ],
+    "dependencies":{
+        "s3sdk":"^4.0.1+64"
+    },
+    "installPaths":{
+        "s3sdk":"modules/s3sdk/"
+    }
+}
