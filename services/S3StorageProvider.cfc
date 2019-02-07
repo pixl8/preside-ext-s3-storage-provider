@@ -107,6 +107,13 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 	}
 
 	public binary function getObject( required string path, boolean trashed=false, boolean private=false ){
+		var cacheKey = _getCacheKey( argumentCollection=arguments );
+		var fromCache = _getFromCache( cacheKey );
+
+		if ( !IsNull( local.fromCache ) ) {
+			return fromCache;
+		}
+
 		try {
 			var s3Object     = _getS3Service().getObject( _getBucket(), _expandPath( argumentCollection=arguments ) );
 			var binaryObject = _getS3Utils().readInputStreamToBytes( s3Object.getDataInputStream() );
@@ -126,6 +133,8 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 			);
 		}
 
+		_setToCache( cacheKey, binaryObject );
+
 		return binaryObject;
 	}
 
@@ -136,10 +145,15 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 		s3Object.setStorageClass( _getStorageClass( argumentCollection=arguments, s3Object=s3Object ) );
 
 		_getS3Service().putObject( _getBucket(), s3Object );
+
+		var cacheKey = _getCacheKey( argumentCollection=arguments );
+		_setToCache( cacheKey, arguments.object );
+
 	}
 
 	public void function deleteObject( required string path, boolean trashed=false, boolean private=false ){
 		_getS3Service().deleteObject( _getBucket(), _expandPath( argumentCollection=arguments ) );
+		_clearFromCache( _getCacheKey( argumentCollection=arguments ) );
 	}
 
 	public string function softDeleteObject( required string path, boolean private=false ){
@@ -151,6 +165,7 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 		newS3Object.setStorageClass( _getStorageClass( argumentCollection=arguments, s3Object=newS3Object, trashed=true ) );
 
 		_getS3Service().moveObject( _getBucket(), originalPath, _getBucket(), newS3Object, true );
+		_clearFromCache( _getCacheKey( argumentCollection=arguments ) );
 
 		return arguments.path;
 	}
@@ -177,6 +192,7 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 		newS3Object.setStorageClass( _getStorageClass( private=arguments.newIsPrivate, s3Object=newS3Object ) );
 
 		_getS3Service().moveObject( _getBucket(), originalPath, _getBucket(), newS3Object, true );
+		_clearFromCache( _getCacheKey( path=arguments.originalPath, private=originalIsPrivate ) );
 	}
 
 	public string function getObjectUrl( required string path ){
@@ -265,6 +281,44 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 		}
 
 		return s3Object.STORAGE_CLASS_STANDARD;
+	}
+
+	private any function _getCache() {
+		if ( !StructKeyExists( variables, "_cache" ) ) {
+			if ( StructKeyExists( application, "cbBootstrap" ) && IsDefined( 'application.cbBootstrap.getController' ) ) {
+				variables._cache = application.cbBootstrap.getController().getCachebox().getCache( "s3StorageProviderCache" );
+			}
+		}
+
+		return variables._cache ?: NullValue();
+	}
+
+	private string function _getCacheKey( required string path, boolean private=false, boolean trashed=false ) {
+		return _getBucket() & "#arguments.path#.#arguments.private#.#arguments.trashed#";
+	}
+
+	private any function _getFromCache() {
+		var cache = _getCache();
+		if ( !IsNull( local.cache ) ) {
+			return cache.get( argumentCollection=arguments );
+		}
+	}
+
+	private any function _setToCache() {
+		var cache = _getCache();
+
+		if ( !IsNull( local.cache ) ) {
+			return cache.set( argumentCollection=arguments );
+		}
+	}
+
+	private any function _clearFromCache() {
+		var cache = _getCache();
+
+		if ( !IsNull( local.cache ) ) {
+			return cache.clearQuiet( argumentCollection=arguments );
+		}
+
 	}
 
 
