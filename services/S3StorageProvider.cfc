@@ -10,24 +10,24 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 
 // CONSTRUCTOR
 	public any function init(
-		  required string bucket
-		, required string accessKey
-		, required string secretKey
-		,          string region          = "us-west-1"
-		,          string rootUrl         = "https://s3-#arguments.region#.amazonaws.com"
-		,          string subpath         = ""
-		,          string publicRootPath  = "/public"
-		,          string privateRootPath = "/private"
-		,          string trashRootPath   = "/.trash"
+		  required string s3bucket
+		, required string s3accessKey
+		, required string s3secretKey
+		,          string s3region          = "us-west-1"
+		,          string s3rootUrl         = "https://s3-#arguments.s3region#.amazonaws.com"
+		,          string s3subpath         = ""
+		,          string s3publicRootPath  = "/public"
+		,          string s3privateRootPath = "/private"
+		,          string s3trashRootPath   = "/.trash"
 	){
-		_setRegion( arguments.region );
-		_setBucket( arguments.bucket );
-		_setPublicDirectory( arguments.subpath & arguments.publicRootPath );
-		_setPrivateDirectory( arguments.subpath & arguments.privateRootPath );
-		_setTrashDirectory( arguments.subpath & arguments.trashRootPath );
-		_setRootUrl( arguments.rootUrl );
+		_setRegion( arguments.s3region );
+		_setBucket( arguments.s3bucket );
+		_setPublicDirectory( arguments.s3subpath & arguments.s3publicRootPath );
+		_setPrivateDirectory( arguments.s3subpath & arguments.s3privateRootPath );
+		_setTrashDirectory( arguments.s3subpath & arguments.s3trashRootPath );
+		_setRootUrl( arguments.s3rootUrl );
 
-		_setupS3Service( arguments.accessKey, arguments.secretKey, arguments.region );
+		_setupS3Service( arguments.s3accessKey, arguments.s3secretKey, arguments.s3region );
 
 		return this;
 	}
@@ -208,7 +208,7 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 		var rootUrl = _getRootUrl();
 
 		if ( Trim( rootUrl ).len() ) {
-			return rootUrl & _expandPath( arguments.path );
+			return rootUrl & _getBucket() & "/" & _expandPath( arguments.path );
 		}
 
 		return "";
