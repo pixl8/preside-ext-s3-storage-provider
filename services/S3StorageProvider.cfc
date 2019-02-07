@@ -140,9 +140,17 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 
 	public void function putObject( required any object, required string path, boolean private=false ){
 		var s3Object = CreateObject( "java", "org.jets3t.service.model.S3Object" ).init( _expandPath( argumentCollection=arguments ), arguments.object );
+		var dispositionAndMimeType = _getDispositionAndMimeType( ListLast( arguments.path, "." ) );
 
 		s3Object.setAcl( _getAcl( argumentCollection=arguments ) );
 		s3Object.setStorageClass( _getStorageClass( argumentCollection=arguments, s3Object=s3Object ) );
+
+		if ( StructCount( dispositionAndMimeType ) ) {
+			if ( dispositionAndMimeType.disposition == "attachment" ) {
+				s3Object.setContentDisposition( dispositionAndMimeType.disposition & "; filename=""#ListLast( arguments.path, "\/" )#""" );
+			}
+			s3Object.setContentType( dispositionAndMimeType.mimeType );
+		}
 
 		_getS3Service().putObject( _getBucket(), s3Object );
 
@@ -161,6 +169,7 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 		var newPath      = _expandPath( argumentCollection=arguments, trashed=true );
 
 		var newS3Object = CreateObject( "java", "org.jets3t.service.model.S3Object" ).init( newPath );
+
 		newS3Object.setAcl( _getAcl( argumentCollection=arguments, trashed=true ) );
 		newS3Object.setStorageClass( _getStorageClass( argumentCollection=arguments, s3Object=newS3Object, trashed=true ) );
 
@@ -319,6 +328,30 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 			return cache.clearQuiet( argumentCollection=arguments );
 		}
 
+	}
+
+	private struct function _getDispositionAndMimeType( required string fileExtension ) {
+		if ( !StructKeyExists( variables, "_extensionMappings" )  ) {
+			variables._extensionMappings = {};
+			if ( StructKeyExists( application, "cbBootstrap" ) && IsDefined( 'application.cbBootstrap.getController' ) ) {
+				var typeSettings = application.cbBootstrap.getController().getSetting( "assetmanager.types" );
+
+				for( var group in typeSettings ) {
+					for( var ext in typeSettings[ group ] ) {
+						var mimeType = typeSettings[ group ][ ext ].mimeType ?: "";
+						var serveAsAttachment = IsBoolean( typeSettings[ group ][ ext ].serveAsAttachment ?: "" ) && typeSettings[ group ][ ext ].serveAsAttachment;
+						if ( Len( Trim( mimeType ) ) ) {
+							variables._extensionMappings[ ext ] = {
+								  mimeType = mimeType
+								, disposition = serveAsAttachment ? "attachment" : "inline"
+							};
+						}
+					}
+				}
+			}
+		}
+
+		return variables._extensionMappings[ arguments.fileExtension ] ?: {};
 	}
 
 
