@@ -17,11 +17,5 @@
         ".gitignore",
         ".travis.yml",
         ".twgit_features_subject"
-    ],
-    "dependencies":{
-        "s3sdk":"^4.0.1+64"
-    },
-    "installPaths":{
-        "s3sdk":"modules/s3sdk/"
-    }
+    ]
 }
