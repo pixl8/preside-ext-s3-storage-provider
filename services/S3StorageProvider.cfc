@@ -45,14 +45,14 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 			);
 			s3Service.listAllBuckets();
 		} catch( any e ) {
-			validationResult.addError( "s3accessKey", "storage-providers.s3:validation.connection.error ", [ e.s3ErrorMessage ?: e.message ] );
+			validationResult.addError( "s3accessKey", "storage-providers.s3:validation.connection.error", [ e.s3ErrorMessage ?: e.message ] );
 			return;
 		}
 
 		try {
 			s3Service.listObjects( arguments.configuration.s3bucket ?: "" );
 		} catch( any e ) {
-			validationResult.addError( "s3bucket", "storage-providers.s3:validation.bucket.not.exists #serializeJSON(arguments)#", [ arguments.configuration.s3bucket ?: "", e.s3ErrorMessage ?: e.message ] );
+			validationResult.addError( "s3bucket", "storage-providers.s3:validation.bucket.not.exists", [ arguments.configuration.s3bucket ?: "", e.s3ErrorMessage ?: e.message ] );
 			return;
 		}
 	}
