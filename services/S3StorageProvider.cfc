@@ -34,25 +34,25 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 
 // PUBLIC API METHODS
 	public any function validate( required struct configuration, required any validationResult ) {
-		var bucket    = arguments.configuration.bucket    ?: "";
+		var bucket    = arguments.configuration.s3bucket    ?: "";
 		var s3Service = "";
 
 		try {
 			s3Service = _instantiateS3Service(
-				  accessKey = arguments.configuration.accessKey ?: ""
-				, secretKey = arguments.configuration.secretKey ?: ""
-				, region    = arguments.configuration.region    ?: "us-west-1"
+				  accessKey = arguments.configuration.s3accessKey ?: ""
+				, secretKey = arguments.configuration.s3secretKey ?: ""
+				, region    = arguments.configuration.s3region    ?: "us-west-1"
 			);
 			s3Service.listAllBuckets();
 		} catch( any e ) {
-			validationResult.addError( "accessKey", "storage-providers.s3:validation.connection.error", [ e.s3ErrorMessage ?: e.message ] );
+			validationResult.addError( "s3accessKey", "storage-providers.s3:validation.connection.error ", [ e.s3ErrorMessage ?: e.message ] );
 			return;
 		}
 
 		try {
-			s3Service.listObjects( arguments.configuration.bucket ?: "" );
+			s3Service.listObjects( arguments.configuration.s3bucket ?: "" );
 		} catch( any e ) {
-			validationResult.addError( "bucket", "storage-providers.s3:validation.bucket.not.exists", [ arguments.configuration.bucket ?: "", e.s3ErrorMessage ?: e.message ] );
+			validationResult.addError( "s3bucket", "storage-providers.s3:validation.bucket.not.exists #serializeJSON(arguments)#", [ arguments.configuration.s3bucket ?: "", e.s3ErrorMessage ?: e.message ] );
 			return;
 		}
 	}
