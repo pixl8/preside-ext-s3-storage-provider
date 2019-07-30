@@ -25,7 +25,7 @@ settings.s3StorageProvider = {
 	, bucket    = "" // required, e.g. 'my-unique-s3-bucket'
 	, region    = "" // optional, e.g. eu-west-2 (default is us-east-1)
 	, subpath   = "" // optional, e.g. /sub/path/in/bucket 
-	, rootUrl   = "" // optional, e.g. htts://s3.eu-west-2.amazonaws.com"
+	, rootUrl   = "" // optional, e.g. https://custom.domain.com/public"
 };
 ```
 

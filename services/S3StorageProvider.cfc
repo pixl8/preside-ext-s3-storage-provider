@@ -14,7 +14,7 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 		, required string s3accessKey
 		, required string s3secretKey
 		,          string s3region          = "us-west-1"
-		,          string s3rootUrl         = "https://s3-#arguments.s3region#.amazonaws.com"
+		,          string s3rootUrl
 		,          string s3subpath         = ""
 		,          string s3publicRootPath  = "/public"
 		,          string s3privateRootPath = "/private"
@@ -25,6 +25,11 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 		_setPublicDirectory( arguments.s3subpath & arguments.s3publicRootPath );
 		_setPrivateDirectory( arguments.s3subpath & arguments.s3privateRootPath );
 		_setTrashDirectory( arguments.s3subpath & arguments.s3trashRootPath );
+
+		if ( !StructKeyExists( arguments, "s3rootUrl" ) ) {
+			arguments.s3RootUrl = "https://s3-#arguments.s3region#.amazonaws.com/#arguments.s3Bucket##_getPublicDirectory()#";
+		}
+
 		_setRootUrl( arguments.s3rootUrl );
 
 		_setupS3Service( arguments.s3accessKey, arguments.s3secretKey, arguments.s3region );
@@ -34,14 +39,14 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 
 // PUBLIC API METHODS
 	public any function validate( required struct configuration, required any validationResult ) {
-		var bucket    = arguments.configuration.bucket    ?: "";
+		var bucket    = arguments.configuration.s3bucket    ?: "";
 		var s3Service = "";
 
 		try {
 			s3Service = _instantiateS3Service(
-				  accessKey = arguments.configuration.accessKey ?: ""
-				, secretKey = arguments.configuration.secretKey ?: ""
-				, region    = arguments.configuration.region    ?: "us-west-1"
+				  accessKey = arguments.configuration.s3accessKey ?: ""
+				, secretKey = arguments.configuration.s3secretKey ?: ""
+				, region    = arguments.configuration.s3region    ?: "us-west-1"
 			);
 			s3Service.listAllBuckets();
 		} catch( any e ) {
@@ -50,9 +55,9 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 		}
 
 		try {
-			s3Service.listObjects( arguments.configuration.bucket ?: "" );
+			s3Service.listObjects( arguments.configuration.s3bucket ?: "" );
 		} catch( any e ) {
-			validationResult.addError( "s3bucket", "storage-providers.s3:validation.bucket.not.exists", [ arguments.configuration.bucket ?: "", e.s3ErrorMessage ?: e.message ] );
+			validationResult.addError( "s3bucket", "storage-providers.s3:validation.bucket.not.exists", [ arguments.configuration.s3bucket ?: "", e.s3ErrorMessage ?: e.message ] );
 			return;
 		}
 	}
@@ -208,7 +213,7 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 		var rootUrl = _getRootUrl();
 
 		if ( Trim( rootUrl ).len() ) {
-			return rootUrl & _getBucket() & "/" & _expandPath( arguments.path );
+			return rootUrl & _cleanPath( arguments.path );
 		}
 
 		return "";
@@ -238,9 +243,6 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 
 		cleaned = ReReplace( cleaned, "^/", "" );
 		cleaned = Trim( cleaned );
-		if ( !arguments.trashed ) {
-			cleaned = LCase( cleaned );
-		}
 
 		return cleaned;
 	}
