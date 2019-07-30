@@ -243,9 +243,6 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 
 		cleaned = ReReplace( cleaned, "^/", "" );
 		cleaned = Trim( cleaned );
-		if ( !arguments.trashed ) {
-			cleaned = LCase( cleaned );
-		}
 
 		return cleaned;
 	}
