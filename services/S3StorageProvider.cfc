@@ -14,7 +14,7 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 		, required string s3accessKey
 		, required string s3secretKey
 		,          string s3region          = "us-west-1"
-		,          string s3rootUrl         = "https://s3-#arguments.s3region#.amazonaws.com"
+		,          string s3rootUrl
 		,          string s3subpath         = ""
 		,          string s3publicRootPath  = "/public"
 		,          string s3privateRootPath = "/private"
@@ -25,6 +25,11 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 		_setPublicDirectory( arguments.s3subpath & arguments.s3publicRootPath );
 		_setPrivateDirectory( arguments.s3subpath & arguments.s3privateRootPath );
 		_setTrashDirectory( arguments.s3subpath & arguments.s3trashRootPath );
+
+		if ( !StructKeyExists( arguments, "s3rootUrl" ) ) {
+			arguments.s3RootUrl = "https://s3-#arguments.s3region#.amazonaws.com/#arguments.s3Bucket##_getPublicDirectory()#";
+		}
+
 		_setRootUrl( arguments.s3rootUrl );
 
 		_setupS3Service( arguments.s3accessKey, arguments.s3secretKey, arguments.s3region );
@@ -208,7 +213,7 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 		var rootUrl = _getRootUrl();
 
 		if ( Trim( rootUrl ).len() ) {
-			return rootUrl & _getBucket() & "/" & _expandPath( arguments.path );
+			return rootUrl & _cleanPath( arguments.path );
 		}
 
 		return "";
