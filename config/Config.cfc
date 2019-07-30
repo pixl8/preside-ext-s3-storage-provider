@@ -23,8 +23,11 @@ component {
 			, region    = settings.injectedConfig.S3_ASSETS_REGION     ?: "us-east-1"
 			, bucket    = settings.injectedConfig.S3_ASSETS_BUCKET     ?: ""
 			, subpath   = settings.injectedConfig.S3_ASSETS_SUBPATH    ?: ""
-			, rootUrl   = settings.injectedConfig.S3_ASSETS_URL        ?: "https://s3.#( settings.s3StorageProvider.region ?: ( settings.injectedConfig.S3_ASSETS_REGION ?: "us-east-1" ) )#.amazonaws.com"
 		}, false );
+
+		if ( StructKeyExists( settings.injectedConfig, "S3_ASSETS_URL" ) && !StructKeyExists( settings.s3StorageProvider, "rootUrl" ) ) {
+			settings.s3StorageProvider.rootUrl = settings.injectedConfig.S3_ASSETS_URL;
+		}
 	}
 
 	private void function _setupInterceptors( conf ) {
