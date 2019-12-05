@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9.5
+
+* Remove accidentally added code (out of place)
+
 ## 0.9.4
 
 * Ensure formbuilder storage provider is mapped to s3!
