@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9.4
+
+* Ensure formbuilder storage provider is mapped to s3!
+
 ## 0.9.3
 
 * Change how public URLs are set. Now must either pass nothing for automatic public URL generation, or pass an explicity URL including the subpath to the public folder.
