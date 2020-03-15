@@ -94,7 +94,7 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 		try {
 			var objects  =  listObjects( argumentCollection=arguments );
 			var fullpath = "/" & _expandPath( argumentCollection=arguments );
-			for( object in objects ) {
+			for( var object in objects ) {
 				if ( fullPath == "#object.path#/#object.name#" ) {
 					return {
 						  size         = object.size         ?: ""
@@ -102,9 +102,9 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 					};
 				}
 			}
-		} catch( any e ) {
-			return {};
-		}
+		} catch( any e ) {}
+
+		return {};
 	}
 
 	public boolean function objectExists( required string path, boolean trashed=false, boolean private=false ){
