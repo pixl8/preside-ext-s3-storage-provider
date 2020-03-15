@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9.6
+
+* Fix objectExists() throwing an error rather than returning false when object does not exist in storage
+
 ## 0.9.5
 
 * Remove accidentally added code (out of place)
