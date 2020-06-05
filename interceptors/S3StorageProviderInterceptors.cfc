@@ -26,7 +26,7 @@ component extends="coldbox.system.Interceptor" {
 				, evictCount                     = 200
 				, maxObjects                     = 500
 				, objectStore                    = "DiskStore"
-				, directoryPath                  = GetTempDirectory() & "/.s3Cache"
+				, directoryPath                  = ExpandPath( "/uploads/.cache/s3" )
 				, autoExpandPath                 = false
 			});
 			cachebox.addCache( cache );
