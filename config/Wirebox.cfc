@@ -16,12 +16,12 @@ component {
 		}
 
 		if ( Len( args.s3accessKey ) && Len( args.s3secretKey ) && Len( args.s3bucket ) ) {
-			binder.map( "assetStorageProvider" ).asSingleton().to( "s3StorageProvider.services.S3StorageProvider" ).noAutoWire().initWith( argumentCollection=args );
-			binder.map( "formBuilderStorageProvider" ).asSingleton().to( "s3StorageProvider.services.S3StorageProvider" ).noAutoWire().initWith(
+			binder.map( "assetStorageProvider" ).asSingleton().to( "app.extensions.preside-ext-s3-storage-provider.services.S3StorageProvider" ).noAutoWire().initWith( argumentCollection=args );
+			binder.map( "formBuilderStorageProvider" ).asSingleton().to( "app.extensions.preside-ext-s3-storage-provider.services.S3StorageProvider" ).noAutoWire().initWith(
 				  argumentCollection = args
 				, s3subPath          = ListAppend( args.s3subPath, "formbuilder", "/" )
 			);
-			binder.map( "scheduledReportStorageProvider" ).asSingleton().to( "s3StorageProvider.services.S3StorageProvider" ).noAutoWire().initWith(
+			binder.map( "scheduledReportStorageProvider" ).asSingleton().to( "app.extensions.preside-ext-s3-storage-provider.services.S3StorageProvider" ).noAutoWire().initWith(
 				  argumentCollection = args
 				, s3subPath          = ListAppend( args.s3subPath, "scheduledreports", "/" )
 				, s3publicRootPath   = "/"
