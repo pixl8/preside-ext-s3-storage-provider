@@ -21,6 +21,12 @@ component {
 				  argumentCollection = args
 				, s3subPath          = ListAppend( args.s3subPath, "formbuilder", "/" )
 			);
+			binder.map( "scheduledReportStorageProvider" ).asSingleton().to( "s3StorageProvider.services.S3StorageProvider" ).noAutoWire().initWith(
+				  argumentCollection = args
+				, s3subPath          = ListAppend( args.s3subPath, "scheduledreports", "/" )
+				, s3publicRootPath   = "/"
+				, s3privateRootPath  = "/"
+			);
 		}
 	}
 

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9.8
+
+* Ensure the new Preside 10.12 "ScheduledReportStorageProvider" is automatically converted to S3
+
 ## 0.9.7
 
 * Do not use Lucee temp directory for file based cache.
