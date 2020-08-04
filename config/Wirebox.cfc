@@ -21,9 +21,9 @@ component {
 				  argumentCollection = args
 				, s3subPath          = ListAppend( args.s3subPath, "formbuilder", "/" )
 			);
-			binder.map( "scheduledReportStorageProvider" ).asSingleton().to( "app.extensions.preside-ext-s3-storage-provider.services.S3StorageProvider" ).noAutoWire().initWith(
+			binder.map( "ScheduledExportStorageProvider" ).asSingleton().to( "app.extensions.preside-ext-s3-storage-provider.services.S3StorageProvider" ).noAutoWire().initWith(
 				  argumentCollection = args
-				, s3subPath          = ListAppend( args.s3subPath, "scheduledreports", "/" )
+				, s3subPath          = ListAppend( args.s3subPath, "scheduledexports", "/" )
 				, s3publicRootPath   = "/"
 				, s3privateRootPath  = "/"
 			);
