@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.9.10
+
+* Ensure the new Preside 10.12 "ScheduledExportStorageProvider" is automatically converted to S3
+
+
 ## 0.9.9
 
 * Use more compatible mapping in wirebox.cfc (we have a problem with load order sometimes we think)
