@@ -208,11 +208,11 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 
 		if ( StructCount( dispositionAndMimeType ) ) {
 			if ( dispositionAndMimeType.disposition == "attachment" ) {
-				s3Object.setContentDisposition( dispositionAndMimeType.disposition & "; filename=""#ListLast( newPath, "\/" )#""" );
+				newS3Object.setContentDisposition( dispositionAndMimeType.disposition & "; filename=""#ListLast( newPath, "\/" )#""" );
 			} else {
-				s3Object.setContentDisposition( "inline" );
+				newS3Object.setContentDisposition( "inline" );
 			}
-			s3Object.setContentType( dispositionAndMimeType.mimeType );
+			newS3Object.setContentType( dispositionAndMimeType.mimeType );
 		}
 
 		_getS3Service().moveObject( _getBucket(), originalPath, _getBucket(), newS3Object, true );
