@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9.11
+
+* [#4](https://github.com/pixl8/preside-ext-s3-storage-provider/issues/4) ensure mimetype and content disposition is correctly set when moving an object
+
 ## 0.9.10
 
 * Ensure the new Preside 10.12 "ScheduledExportStorageProvider" is automatically converted to S3
