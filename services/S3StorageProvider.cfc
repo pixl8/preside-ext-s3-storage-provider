@@ -198,12 +198,22 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 	}
 
 	public void function moveObject( required string originalPath, required string newPath, boolean originalIsPrivate=false, boolean newIsPrivate=false ) {
-		var originalPath = _expandPath( path=arguments.originalPath, private=originalIsPrivate );
-		var newPath      = _expandPath( path=arguments.newPath, private=newIsPrivate );
+		var originalPath           = _expandPath( path=arguments.originalPath, private=originalIsPrivate );
+		var newPath                = _expandPath( path=arguments.newPath     , private=newIsPrivate );
+		var dispositionAndMimeType = _getDispositionAndMimeType( ListLast( newPath, "." ) );
+		var newS3Object            = CreateObject( "java", "org.jets3t.service.model.S3Object" ).init( newPath );
 
-		var newS3Object = CreateObject( "java", "org.jets3t.service.model.S3Object" ).init( newPath );
 		newS3Object.setAcl( _getAcl( private=arguments.newIsPrivate ) );
 		newS3Object.setStorageClass( _getStorageClass( private=arguments.newIsPrivate, s3Object=newS3Object ) );
+
+		if ( StructCount( dispositionAndMimeType ) ) {
+			if ( dispositionAndMimeType.disposition == "attachment" ) {
+				s3Object.setContentDisposition( dispositionAndMimeType.disposition & "; filename=""#ListLast( newPath, "\/" )#""" );
+			} else {
+				s3Object.setContentDisposition( "inline" );
+			}
+			s3Object.setContentType( dispositionAndMimeType.mimeType );
+		}
 
 		_getS3Service().moveObject( _getBucket(), originalPath, _getBucket(), newS3Object, true );
 		_clearFromCache( _getCacheKey( path=arguments.originalPath, private=originalIsPrivate ) );
