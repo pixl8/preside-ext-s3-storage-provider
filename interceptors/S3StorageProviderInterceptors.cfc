@@ -25,7 +25,7 @@ component extends="coldbox.system.Interceptor" {
 				, evictionPolicy                 = "LFU"
 				, evictCount                     = 200
 				, maxObjects                     = 500
-				, objectStore                    = "DiskStore"
+				, objectStore                    = "app.extensions.preside-ext-s3-storage-provider.cache.S3FileStore"
 				, directoryPath                  = ExpandPath( "/uploads/.cache/s3" )
 				, autoExpandPath                 = false
 			});
