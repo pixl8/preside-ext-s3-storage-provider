@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.0
+
+* Support for Preside 10.14 'file system' storage provider methods that allow operations just on local file paths, rather than binary objects loaded into memory.
+* Support using the AWS CLI to perform GETs and PUTs of objects rather than the Java API - minimize java memory usage
+
 ## 0.9.11
 
 * [#4](https://github.com/pixl8/preside-ext-s3-storage-provider/issues/4) ensure mimetype and content disposition is correctly set when moving an object
