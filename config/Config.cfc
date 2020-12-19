@@ -23,6 +23,8 @@ component {
 			, region    = settings.injectedConfig.S3_ASSETS_REGION     ?: "us-east-1"
 			, bucket    = settings.injectedConfig.S3_ASSETS_BUCKET     ?: ""
 			, subpath   = settings.injectedConfig.S3_ASSETS_SUBPATH    ?: ""
+			, useCli    = settings.injectedConfig.S3_ASSETS_USE_CLI    ?: false
+			, cliPath   = settings.injectedConfig.S3_ASSETS_CLI_PATH   ?: "/usr/local/bin/aws"
 		}, false );
 
 		if ( StructKeyExists( settings.injectedConfig, "S3_ASSETS_URL" ) && !StructKeyExists( settings.s3StorageProvider, "rootUrl" ) ) {
@@ -30,10 +32,12 @@ component {
 		}
 	}
 
+
 	private void function _setupInterceptors( conf ) {
 		conf.interceptors.append( {
 			  class      = "app.extensions.preside-ext-s3-storage-provider.interceptors.S3StorageProviderInterceptors"
 			, properties = {}
 		});
 	}
+
 }
