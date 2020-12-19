@@ -2,5 +2,5 @@
 	  "id"        : "preside-ext-s3-storage-provider"
 	, "title"     : "Preside S3 Storage Provider"
 	, "author"    : "Pixl8 Interactive"
-	, "version"   : "VERSION_NUMBER"
+	, "version"   : "$VERSION_NUMBER"
 }
