@@ -548,7 +548,7 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 	}
 
 	private any function _callCli( required string args ) {
-		var errorOut = "";
+		var errorOut    = "";
 		var standardOut = "";
 
 		execute name          = _getCliPath()
@@ -557,11 +557,11 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 		        errorVariable = "errorOut"
 		        variable      = "standardOut";
 
-		if ( Len( Trim( local.errorOut ?: "" ) ) ) { // needing ( local.errorOut ?: "" ) because somehow Lucee can make this null
-			throw( type="aws.s3.cli.error", message="Error calling AWS CLI. See detail for specific error output.", detail=errors );
+		if ( Len( Trim( local.errorOut ?: "" ) ) ) {
+			throw( type="aws.s3.cli.error", message="Error calling AWS CLI. See detail for specific error output.", detail=errorOut );
 		}
 
-		return standardOut;
+		return local.standardOut ?: "";
 	}
 
 
