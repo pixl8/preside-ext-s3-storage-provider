@@ -172,6 +172,7 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 				, path      = arguments.path
 				, private   = arguments.private
 			);
+
 		} else {
 			try {
 				var s3Object = _getS3Service().getObject( _getBucket(), _expandPath( argumentCollection=arguments ) );
@@ -493,6 +494,13 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 		args &= " --profile=#_getCliProfile()#";
 
 		_callCli( args );
+
+		if ( !FileExists( arguments.localPath ) ) {
+			throw(
+				  type    = "storageProvider.objectNotFound"
+				, message = "The object, [#arguments.path#], could not be found or is not accessible"
+			);
+		}
 	}
 
 	private void function _putUsingCli(  required string localPath, required string path, boolean private=false ) {
@@ -559,10 +567,6 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 
 		if ( Len( Trim( local.errorOut ?: "" ) ) ) {
 			throw( type="aws.s3.cli.error", message="Error calling AWS CLI. See detail for specific error output.", detail=errorOut );
-		}
-
-		if ( Len( Trim( local.standardOut ?: "" ) ) ) {
-			SystemOutput( "DEBUG: AWS S3 Command Output. Args: [#arguments.args#]. Output: [#standardOut#]." & Chr( 10 ) );
 		}
 
 		return local.standardOut ?: "";
