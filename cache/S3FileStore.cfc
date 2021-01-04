@@ -295,7 +295,7 @@ component implements="coldbox.system.cache.store.IObjectStore" accessors="true"{
 	 * @objectKey The key to lookup
 	 */
 	function getCacheFilePath( required objectKey ){
-		return variables.directoryPath & "/" & hash( arguments.objectKey ) & ".cachebox";
+		return variables.directoryPath & "/" & hash( LCase( arguments.objectKey ) ) & ".cachebox";
 	}
 
 }
