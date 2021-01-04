@@ -561,6 +561,10 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 			throw( type="aws.s3.cli.error", message="Error calling AWS CLI. See detail for specific error output.", detail=errors );
 		}
 
+		if ( Len( Trim( local.standardOut ?: "" ) ) ) {
+			SystemOutput( "DEBUG: AWS S3 Command Output. Args: [#arguments.args#]. Output: [#standardOut#]." & Chr( 10 ) );
+		}
+
 		return standardOut;
 	}
 
