@@ -160,6 +160,7 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 	public string function getObjectLocalPath( required string path, boolean trashed=false, boolean private=false ) {
 		var cacheKey = _getCacheKey( argumentCollection=arguments );
 
+
 		if ( _existsInCache( cacheKey ) ) {
 			return _getCachePath( cacheKey );
 		}
@@ -171,6 +172,7 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 				  localPath = tmpFilePath
 				, path      = arguments.path
 				, private   = arguments.private
+				, trashed   = arguments.trashed
 			);
 
 		} else {
@@ -487,7 +489,7 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 		_getS3Service().putObject( _getBucket(), arguments.s3Object );
 	}
 
-	private void function _getUsingCli(  required string localPath, required string path, boolean private=false ) {
+	private void function _getUsingCli(  required string localPath, required string path, boolean private=false, boolean trashed=false ) {
 		var s3Uri = "s3://#_getBucket()#/#_expandPath( argumentCollection=arguments )#";
 		var args = "s3 cp #s3Uri# ""#arguments.localPath#""";
 
