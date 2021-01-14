@@ -416,6 +416,7 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 		if ( !IsNull( local.cache ) ) {
 			return cache.lookupQuiet( argumentCollection=arguments );
 		}
+		return false;
 	}
 
 	private string function _getCachePath() {
