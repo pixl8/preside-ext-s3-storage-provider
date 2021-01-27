@@ -4,7 +4,7 @@
  *
  * @singleton
  * @autodoc
- *
+ * @fileSystemSupport
  */
 component implements="preside.system.services.fileStorage.StorageProvider" displayname="File System Storage Provider" {
 
@@ -19,19 +19,27 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 		,          string s3publicRootPath  = "/public"
 		,          string s3privateRootPath = "/private"
 		,          string s3trashRootPath   = "/.trash"
+		,          string useCli            = false
+		,          string cliPath           = "/usr/local/bin/aws"
 	){
 		_setRegion( arguments.s3region );
 		_setBucket( arguments.s3bucket );
 		_setPublicDirectory( arguments.s3subpath & arguments.s3publicRootPath );
 		_setPrivateDirectory( arguments.s3subpath & arguments.s3privateRootPath );
 		_setTrashDirectory( arguments.s3subpath & arguments.s3trashRootPath );
+		_setUseCli( arguments.useCli && FileExists( arguments.cliPath ) );
+		_setCliPath( arguments.cliPath );
 
 		if ( !StructKeyExists( arguments, "s3rootUrl" ) ) {
 			arguments.s3RootUrl = "https://s3-#arguments.s3region#.amazonaws.com/#arguments.s3Bucket##_getPublicDirectory()#";
 		}
 
+
 		_setRootUrl( arguments.s3rootUrl );
 
+		if ( _useCli() ) {
+			_setCliProfile(  arguments.s3accessKey, arguments.s3secretKey, arguments.s3region );
+		}
 		_setupS3Service( arguments.s3accessKey, arguments.s3secretKey, arguments.s3region );
 
 		return this;
@@ -119,11 +127,17 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 			return fromCache;
 		}
 
+		var binaryObject = "";
 		try {
-			var s3Object     = _getS3Service().getObject( _getBucket(), _expandPath( argumentCollection=arguments ) );
-			var binaryObject = _getS3Utils().readInputStreamToBytes( s3Object.getDataInputStream() );
-			var verified     = s3Object.verifyData( binaryObject );
+			var s3Object = _getS3Service().getObject( _getBucket(), _expandPath( argumentCollection=arguments ) );
 
+			if ( _useCli() ) {
+				binaryObject = FileReadBinary( getObjectLocalPath( argumentCollection=arguments ) );
+			} else {
+				binaryObject = _getS3Utils().readInputStreamToBytes( s3Object.getDataInputStream() );
+			}
+
+			var verified = s3Object.verifyData( binaryObject );
 		} catch ( any e ) {
 			throw(
 				  type    = "storageProvider.objectNotFound"
@@ -143,25 +157,90 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 		return binaryObject;
 	}
 
-	public void function putObject( required any object, required string path, boolean private=false ){
-		var s3Object = CreateObject( "java", "org.jets3t.service.model.S3Object" ).init( _expandPath( argumentCollection=arguments ), arguments.object );
-		var dispositionAndMimeType = _getDispositionAndMimeType( ListLast( arguments.path, "." ) );
+	public string function getObjectLocalPath( required string path, boolean trashed=false, boolean private=false ) {
+		var cacheKey = _getCacheKey( argumentCollection=arguments );
 
-		s3Object.setAcl( _getAcl( argumentCollection=arguments ) );
-		s3Object.setStorageClass( _getStorageClass( argumentCollection=arguments, s3Object=s3Object ) );
 
-		if ( StructCount( dispositionAndMimeType ) ) {
-			if ( dispositionAndMimeType.disposition == "attachment" ) {
-				s3Object.setContentDisposition( dispositionAndMimeType.disposition & "; filename=""#ListLast( arguments.path, "\/" )#""" );
-			}
-			s3Object.setContentType( dispositionAndMimeType.mimeType );
+		if ( _existsInCache( cacheKey ) ) {
+			return _getCachePath( cacheKey );
 		}
 
-		_getS3Service().putObject( _getBucket(), s3Object );
+		var tmpFilePath = GetTempFile( GetTempDirectory(), "" );
+
+		if ( _useCli() ) {
+			_getUsingCli(
+				  localPath = tmpFilePath
+				, path      = arguments.path
+				, private   = arguments.private
+				, trashed   = arguments.trashed
+			);
+
+		} else {
+			try {
+				var s3Object = _getS3Service().getObject( _getBucket(), _expandPath( argumentCollection=arguments ) );
+				var tmpFile  = CreateObject( "java", "java.io.File" ).init( tmpFilePath );
+
+				CreateObject( "java", "org.apache.commons.io.FileUtils" ).copyInputStreamToFile( s3Object.getDataInputStream(), tmpFile );
+			} catch ( any e ) {
+				throw(
+					  type    = "storageProvider.objectNotFound"
+					, message = "The object, [#arguments.path#], could not be found or is not accessible"
+				);
+			}
+		}
+
+		_setToCache( cacheKey, tmpFilePath );
+		var cachedPath = _getCachePath( cacheKey );
+
+		if ( Len( cachedPath ) ) {
+			return cachedPath;
+		}
+
+		throw(
+			  type    = "storageProvider.method.not.supported"
+			, message = "The object, [#arguments.path#], could not be placed in local storage due to the specialist s3FileStore not being used as a local cache."
+		);
+	}
+
+	public void function putObject( required any object, required string path, boolean private=false ){
+		if ( _useCli() ) {
+			var tmpFile = _tmpFile( arguments.object );
+
+			putObjectFromLocalPath(
+				  localPath = tmpFile
+				, path      = arguments.path
+				, private   = arguments.private
+			);
+
+			_deleteFile( tmpFile );
+
+			return;
+		}
+
+		_putS3Object(
+			  s3Object = _s3ObjFromBinary( arguments.object, _expandPath( argumentCollection=arguments ) )
+			, path     = arguments.path
+			, private  = arguments.private
+		);
 
 		var cacheKey = _getCacheKey( argumentCollection=arguments );
 		_setToCache( cacheKey, arguments.object );
+	}
 
+	public void function putObjectFromLocalPath( required string localPath, required string path, boolean private=false ) {
+		if ( _useCli() ) {
+			_putUsingCli( argumentCollection=arguments );
+		} else {
+			_putS3Object(
+				  s3Object = _s3ObjFromFile( arguments.localPath, _expandPath( argumentCollection=arguments ) )
+				, path     = arguments.path
+				, private  = arguments.private
+			);
+		}
+
+
+		var cacheKey = _getCacheKey( argumentCollection=arguments );
+		_setToCache( cacheKey, arguments.localPath );
 	}
 
 	public void function deleteObject( required string path, boolean trashed=false, boolean private=false ){
@@ -294,6 +373,13 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 		return acl;
 	}
 
+	private any function _getAclForCli( required boolean private, boolean trashed=false ) {
+		if ( arguments.private || arguments.trashed ) {
+			return "private";
+		}
+		return "public-read";
+	}
+
 	private any function _getStorageClass( required any s3Object, required boolean private, boolean trashed=false ) {
 		// TODO, make this configurable
 
@@ -323,6 +409,24 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 		if ( !IsNull( local.cache ) ) {
 			return cache.get( argumentCollection=arguments );
 		}
+	}
+
+	private boolean function _existsInCache() {
+		var cache = _getCache();
+		if ( !IsNull( local.cache ) ) {
+			return cache.lookupQuiet( argumentCollection=arguments );
+		}
+		return false;
+	}
+
+	private string function _getCachePath() {
+		var cache = _getCache();
+
+		if ( !IsNull( local.cache ) ) {
+			return _getCache().getObjectStore().getCacheFilePath( argumentCollection=arguments );
+		}
+
+		return "";
 	}
 
 	private any function _setToCache() {
@@ -364,6 +468,111 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 		}
 
 		return variables._extensionMappings[ arguments.fileExtension ] ?: {};
+	}
+
+	private void function _putS3Object(
+		  required any     s3Object
+		, required string  path
+		, required boolean private
+	) {
+		var dispositionAndMimeType = _getDispositionAndMimeType( ListLast( arguments.path, "." ) );
+
+		arguments.s3Object.setAcl( _getAcl( argumentCollection=arguments ) );
+		arguments.s3Object.setStorageClass( _getStorageClass( argumentCollection=arguments ) );
+
+		if ( StructCount( dispositionAndMimeType ) ) {
+			if ( dispositionAndMimeType.disposition == "attachment" ) {
+				arguments.s3Object.setContentDisposition( dispositionAndMimeType.disposition & "; filename=""#ListLast( arguments.path, "\/" )#""" );
+			}
+			arguments.s3Object.setContentType( dispositionAndMimeType.mimeType );
+		}
+
+		_getS3Service().putObject( _getBucket(), arguments.s3Object );
+	}
+
+	private void function _getUsingCli(  required string localPath, required string path, boolean private=false, boolean trashed=false ) {
+		var s3Uri = "s3://#_getBucket()#/#_expandPath( argumentCollection=arguments )#";
+		var args = "s3 cp #s3Uri# ""#arguments.localPath#""";
+
+		args &= " --profile=#_getCliProfile()#";
+
+		_callCli( args );
+
+		if ( !FileExists( arguments.localPath ) ) {
+			throw(
+				  type    = "storageProvider.objectNotFound"
+				, message = "The object, [#arguments.path#], could not be found or is not accessible"
+			);
+		}
+	}
+
+	private void function _putUsingCli(  required string localPath, required string path, boolean private=false ) {
+		var dispositionAndMimeType = _getDispositionAndMimeType( ListLast( arguments.path, "." ) );
+		var s3Uri = "s3://#_getBucket()#/#_expandPath( argumentCollection=arguments )#";
+		var args = "s3 cp"
+
+		args &= " --acl=" & _getAclForCli( argumentCollection=arguments );
+
+		if ( dispositionAndMimeType.disposition == "attachment" ) {
+			var dispoString = dispositionAndMimeType.disposition & "; filename='#ListLast( arguments.path, "\/" )#'";
+			args &= " --content-disposition=""#dispoString#""";
+		}
+		args &= " --content-type=""#dispositionAndMimeType.mimeType#""";
+
+		args &= " ""#arguments.localPath#"" #s3Uri#";
+		args &= " --profile=#_getCliProfile()#";
+
+		_callCli( args );
+	}
+
+	private any function _s3ObjFromBinary( required binary object, required string s3key ) {
+		var s3Object = CreateObject( "java", "org.jets3t.service.model.S3Object" ).init( arguments.s3key, arguments.object );
+
+		return s3Object;
+	}
+
+	private any function _s3ObjFromFile( required string filePath, required string s3key ) {
+		var javaFile = CreateObject( "java", "java.io.File" ).init( arguments.filePath );
+		var s3Object = CreateObject( "java", "org.jets3t.service.model.S3Object" ).init( javaFile );
+
+		s3Object.setKey( arguments.s3key );
+
+		return s3Object;
+	}
+
+	private string function _tmpFile( required any object ) {
+		var tmpFile = GetTempFile( GetTempDirectory(), "" );
+
+		FileWrite( tmpFile, arguments.object );
+
+		return tmpFile;
+	}
+
+	private void function _deleteFile( required string path ) {
+		try {
+			FileDelete( arguments.path )
+		} catch( any e ) {
+			if ( FileExists( arguments.path ) ) {
+				rethrow;
+			}
+		}
+	}
+
+	private any function _callCli( required string args ) {
+		var errorOut    = "";
+		var standardOut = "";
+
+		execute name          = _getCliPath()
+		        arguments     = arguments.args
+		        timeout       = 60
+		        errorVariable = "errorOut"
+		        variable      = "standardOut";
+
+		if ( Len( Trim( local.errorOut ?: "" ) ) ) {
+			throw( type="aws.s3.cli.error", message="Error calling AWS CLI. See detail for specific error output.", detail=errorOut );
+		}
+
+		return local.standardOut ?: "";
 	}
 
 
@@ -457,5 +666,34 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 	}
 	private void function _setPublicGroup( required any publicGroup ) {
 		_publicGroup = arguments.publicGroup;
+	}
+
+	private boolean function _useCli() {
+	    return variables._shouldUseCli;
+	}
+	private void function _setUseCli( required boolean useCli ) {
+	    variables._shouldUseCli = arguments.useCli;
+	}
+
+	private string function _getCliPath() {
+	    return _cliPath;
+	}
+	private void function _setCliPath( required string cliPath ) {
+	    _cliPath = arguments.cliPath;
+	}
+
+	private string function _getCliProfile() {
+	    return _cliProfile;
+	}
+	private void function _setCliProfile(
+		  required string s3accessKey
+		, required string s3secretKey
+		, required string s3region
+	) {
+	    _cliProfile = LCase( Hash( _getBucket() ) );
+
+	    _callCli( "configure set profile.#_cliProfile#.aws_access_key_id #arguments.s3accessKey#" );
+	    _callCli( "configure set profile.#_cliProfile#.aws_secret_access_key #arguments.s3secretKey#" );
+	    _callCli( "configure set profile.#_cliProfile#.region #arguments.s3region#" );
 	}
 }

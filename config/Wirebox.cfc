@@ -9,6 +9,8 @@ component {
 			, s3secretKey = s3StorageSettings.secretKey ?: ""
 			, s3region    = s3StorageSettings.region    ?: "us-east-1"
 			, s3subpath   = s3StorageSettings.subpath   ?: ""
+			, useCli      = s3StorageSettings.useCli    ?: false
+			, cliPath     = s3StorageSettings.cliPath   ?: "/usr/local/bin/aws"
 		};
 
 		if ( StructKeyExists( s3StorageSettings, "rootUrl" ) ) {
