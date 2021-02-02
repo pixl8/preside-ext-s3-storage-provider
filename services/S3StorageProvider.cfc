@@ -514,8 +514,8 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 		args &= " --acl=" & _getAclForCli( argumentCollection=arguments );
 
 		if ( dispositionAndMimeType.disposition == "attachment" ) {
-			var dispoString = dispositionAndMimeType.disposition & "; filename='#ListLast( arguments.path, "\/" )#'";
-			args &= " --content-disposition=""#dispoString#""";
+			var dispoString = dispositionAndMimeType.disposition & "; filename=""#ListLast( arguments.path, "\/" )#""";
+			args &= " --content-disposition='#dispoString#'";
 		}
 		args &= " --content-type=""#dispositionAndMimeType.mimeType#""";
 

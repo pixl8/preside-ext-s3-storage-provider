@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.1
+
+* Fix for issue where content-disposition for file downloads uploaded with CLI contained single quotes that broke the filename that browsers used for file download
+
 ## 1.0.0
 
 * Support for Preside 10.14 'file system' storage provider methods that allow operations just on local file paths, rather than binary objects loaded into memory.
