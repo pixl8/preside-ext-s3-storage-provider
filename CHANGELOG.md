@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.2
+
+* Log full error when falling back to 'File not found error'
+
 ## 1.0.1
 
 * Fix for issue where content-disposition for file downloads uploaded with CLI contained single quotes that broke the filename that browsers used for file download
