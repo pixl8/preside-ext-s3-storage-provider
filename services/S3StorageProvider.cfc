@@ -139,6 +139,7 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 
 			var verified = s3Object.verifyData( binaryObject );
 		} catch ( any e ) {
+			$raiseError( e );
 			throw(
 				  type    = "storageProvider.objectNotFound"
 				, message = "The object, [#arguments.path#], could not be found or is not accessible"
