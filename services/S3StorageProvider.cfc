@@ -3,6 +3,7 @@
  * storage provider.
  *
  * @singleton
+ * @presideService
  * @autodoc
  * @fileSystemSupport
  */
