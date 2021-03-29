@@ -449,23 +449,25 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 	}
 
 	private struct function _getDispositionAndMimeType( required string fileExtension ) {
-		if ( !StructKeyExists( variables, "_extensionMappings" )  ) {
-			variables._extensionMappings = {};
+		if ( !StructKeyExists( variables, "_extensionMappings" ) || StructIsEmpty( variables._extensionMappings ) ) {
 			if ( StructKeyExists( application, "cbBootstrap" ) && IsDefined( 'application.cbBootstrap.getController' ) ) {
 				var typeSettings = application.cbBootstrap.getController().getSetting( "assetmanager.types" );
+				var extMappings = {};
 
 				for( var group in typeSettings ) {
 					for( var ext in typeSettings[ group ] ) {
 						var mimeType = typeSettings[ group ][ ext ].mimeType ?: "";
 						var serveAsAttachment = IsBoolean( typeSettings[ group ][ ext ].serveAsAttachment ?: "" ) && typeSettings[ group ][ ext ].serveAsAttachment;
 						if ( Len( Trim( mimeType ) ) ) {
-							variables._extensionMappings[ ext ] = {
+							extMappings[ ext ] ={
 								  mimeType = mimeType
 								, disposition = serveAsAttachment ? "attachment" : "inline"
 							};
 						}
 					}
 				}
+
+				variables._extensionMappings = extMappings;
 			}
 		}
 
