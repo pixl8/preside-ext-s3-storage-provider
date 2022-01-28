@@ -24,7 +24,7 @@ settings.s3StorageProvider = {
 	, secretKey = "" // required, i.e. your S3 secret access key
 	, bucket    = "" // required, e.g. 'my-unique-s3-bucket'
 	, region    = "" // optional, e.g. eu-west-2 (default is us-east-1)
-	, subpath   = "" // optional, e.g. /sub/path/in/bucket 
+	, subpath   = "" // optional, e.g. /sub/path/in/bucket
 	, rootUrl   = "" // optional, e.g. https://custom.domain.com/public"
 };
 ```
@@ -77,7 +77,7 @@ component extends="preside.system.config.WireBox" {
 			, s3region    = "" // your settings here
 			, s3rootUrl   = "" // your settings here
 			, s3subpath   = "" // your settings here
-		);
+		).virtualInheritance( "presideSuperClass" );
 	}
 
 }
