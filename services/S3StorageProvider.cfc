@@ -496,7 +496,7 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 
 	private void function _getUsingCli(  required string localPath, required string path, boolean private=false, boolean trashed=false ) {
 		var s3Uri = "s3://#_getBucket()#/#_expandPath( argumentCollection=arguments )#";
-		var args = "s3 cp #s3Uri# ""#arguments.localPath#""";
+		var args = "s3 cp ""#s3Uri#"" ""#arguments.localPath#""";
 
 		args &= " --profile=#_getCliProfile()#";
 
@@ -523,7 +523,7 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 		}
 		args &= " --content-type=""#dispositionAndMimeType.mimeType#""";
 
-		args &= " ""#arguments.localPath#"" #s3Uri#";
+		args &= " ""#arguments.localPath#"" ""#s3Uri#""";
 		args &= " --profile=#_getCliProfile()#";
 
 		_callCli( args );
