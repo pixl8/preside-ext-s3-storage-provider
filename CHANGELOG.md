@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.3
+
+* Fix for issues when using commandline to process pushes and pulls with files containing spaces and other special chars
+
 ## 1.0.2
 
 * Log full error when falling back to 'File not found error'
