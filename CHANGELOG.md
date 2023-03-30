@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.4
+
+* [#10](https://github.com/pixl8/preside-ext-s3-storage-provider/issues/10) fix for bad `$raiseError()` function call that was not wanted in the first place
+
 ## 1.0.3
 
 * Fix for issues when using commandline to process pushes and pulls with files containing spaces and other special chars
