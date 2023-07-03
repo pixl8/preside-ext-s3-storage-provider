@@ -23,6 +23,23 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Build jars
+        run: cd java && mvn package
+
+      - name: Convert to bundle
+        run: |
+          cd java/artifacts && \
+          unzip s3storageprovider-1.0.0.jar && \
+          echo "Manifest-Version: 1.0
+          Bundle-ManifestVersion: 2
+          Bundle-Name: Preside S3 Storage Provider helper using AWS SDK
+          Bundle-SymbolicName: org.pixl8.s3storageprovider
+          Bundle-Version: 1.0.0
+          " > META-INF/MANIFEST.MF && \
+          rm s3storageprovider-1.0.0.jar && \
+          zip -rq s3storageprovider-1.0.0.jar * && \
+          cp s3storageprovider-1.0.0.jar ../../lib/
+
       - name: Install dependencies
         uses: pixl8/github-action-box-install@v2
 
