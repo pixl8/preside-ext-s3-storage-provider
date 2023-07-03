@@ -2,3 +2,4 @@
 /.twgit
 tests/.env
 tests/testbox
+tests/preside

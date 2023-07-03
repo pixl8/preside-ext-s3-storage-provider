@@ -4,7 +4,8 @@ component {
 	this.mappings[ '/tests'                                          ] = ExpandPath( "/" );
 	this.mappings[ '/testbox'                                        ] = ExpandPath( "/testbox" );
 	this.mappings[ '/app/extensions/preside-ext-s3-storage-provider' ] = ExpandPath( "../" );
-	this.mappings[ '/preside'                                        ] = ExpandPath( "/helpers/preside" );
+	this.mappings[ '/preside'                                        ] = ExpandPath( "/preside" );
+	this.mappings[ '/coldbox'                                        ] = ExpandPath( "/preside/system/externals/coldbox" );
 
 	setting requesttimeout="6000";
 
