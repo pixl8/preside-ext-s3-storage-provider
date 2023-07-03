@@ -181,10 +181,9 @@ component extends="testbox.system.BaseSpec" {
 				svc.putObjectFromLocalPath( localPath=sourceFile, path="/#prefix#/test.png", private=false );
 
 				var result = svc.getObjectLocalPath( path="/" & prefix & "/test.png" );
-debug( result )
 				expect( FileExists( result ) ).toBeTrue();
 				var fileInfo = GetFileInfo( result );
-				debug( fileInfo );
+				expect( fileInfo.size ).toBe( 4255 );
 			} );
 			it( "should return matched private object binary", function(){
 				var svc = _getService();
@@ -197,7 +196,7 @@ debug( result )
 
 				expect( FileExists( result ) ).toBeTrue();
 				var fileInfo = GetFileInfo( result );
-				debug( fileInfo );
+				expect( fileInfo.size ).toBe( 4255 );
 			} );
 			it( "should throw informative error when object does not exist", function(){
 				var svc = _getService();
@@ -207,6 +206,257 @@ debug( result )
 				} ).toThrow( type="storageProvider.objectNotFound" );
  			} );
 		} );
+
+		describe( "deleteObject", function(){
+			it( "should fully delete the given obect from the s3 bucket", function(){
+				var svc = _getService();
+				var prefix = CreateUUId();
+				var sourceFile = ExpandPath( "/tests/fixtures/test.png" );
+
+				svc.putObjectFromLocalPath( localPath=sourceFile, path="/#prefix#/test.png", private=false );
+				expect( svc.objectExists( "/#prefix#/test.png" ) ).toBeTrue();
+				var objUrl = svc.getObjectUrl( "/#prefix#/test.png" );
+				expect( objUrl contains "amazonaws.com" ).toBeTrue();
+				svc.deleteObject( "/#prefix#/test.png" );
+				expect( svc.objectExists( "/#prefix#/test.png" ) ).toBeFalse();
+				expect( svc.objectExists( path="/#prefix#/test.png", private=true ) ).toBeFalse();
+				expect( svc.objectExists( path="/#prefix#/test.png", trashed=true ) ).toBeFalse();
+
+				var result = "";
+				http url=objUrl timeout=10 result="result";
+				expect( Val( result.statuscode ) == 404 || Val( result.statuscode ) == 403 ).toBeTrue();
+			} );
+		} );
+
+		describe( "putObjectFromLocalPath", function(){
+			it( "should put object into S3 where it is publically accessible (when private=false)", function(){
+				var svc = _getService();
+				var prefix = CreateUUId();
+				var sourceFile = ExpandPath( "/tests/fixtures/test.png" );
+
+				svc.putObjectFromLocalPath( localPath=sourceFile, path="/#prefix#/test.png", private=false );
+				var objUrl = svc.getObjectUrl( "/#prefix#/test.png" );
+				expect( objUrl contains "amazonaws.com" ).toBeTrue();
+				http url=objUrl timeout=10 result="result";
+				expect( result.mimetype ).toBe( "image/png" );
+				expect( Val( result.statuscode ) ).toBe( 200 );
+				expect( isBinary( result.filecontent ) ).toBeTrue();
+				expect( Len( result.filecontent ) ).toBe( 4255 );
+			} );
+
+			it( "should set content disposition headers for downloadable file types", function(){
+				var svc = _getService();
+				var prefix = CreateUUId();
+				var sourceFile = ExpandPath( "/tests/fixtures/test.pdf" );
+
+				svc.putObjectFromLocalPath( localPath=sourceFile, path="/#prefix#/test.pdf", private=false );
+				var objUrl = svc.getObjectUrl( "/#prefix#/test.pdf" );
+				expect( objUrl contains "amazonaws.com" ).toBeTrue();
+				http url=objUrl timeout=10 result="result";
+				expect( result.mimetype ).toBe( "application/pdf" );
+				expect( result.header contains "Content-Disposition: attachment; filename=""test.pdf""").toBeTrue();
+				expect( Val( result.statuscode ) ).toBe( 200 );
+				expect( isBinary( result.filecontent ) ).toBeTrue();
+				expect( Len( result.filecontent ) ).toBe( 7320 );
+			} );
+
+			it( "should auto set mimetype and content disposition", function(){
+				var svc = _getService();
+				var prefix = CreateUUId();
+				var sourceFile = ExpandPath( "/tests/fixtures/test.png" );
+
+
+				svc.putObjectFromLocalPath( localPath=sourceFile, path="/#prefix#/test.png", private=false );
+				var objUrl = svc.getObjectUrl( "/#prefix#/test.png" );
+
+				expect( objUrl contains "amazonaws.com" ).toBeTrue();
+				http url=objUrl timeout=10 result="result";
+			} );
+
+			it( "should put object into S3 where it is not publically accessible (when private=true)", function(){
+				var svc = _getService();
+				var prefix = CreateUUId();
+				var sourceFile = ExpandPath( "/tests/fixtures/test.png" );
+
+				svc.putObjectFromLocalPath( localPath=sourceFile, path="/#prefix#/test.png", private=true );
+				var objUrl = Replace( svc.getObjectUrl( "/#prefix#/test.png" ), "/public/", "/private/" );
+
+				expect( objUrl contains "amazonaws.com" ).toBeTrue();
+				http url=objUrl timeout=10 result="result";
+				expect( Val( result.statuscode ) ).toBe( 403 );
+				expect( result.filecontent contains "access denied" ).toBeTrue();
+			} );
+		} );
+
+		describe( "putObject", function(){
+			it( "should put object into S3 where it is publically accessible (when private=false)", function(){
+				var svc = _getService();
+				var prefix = CreateUUId();
+				var sourceFile = FileReadBinary( ExpandPath( "/tests/fixtures/test.png" ) );
+
+				svc.putObject( object=sourceFile, path="/#prefix#/test.png", private=false );
+				var objUrl = svc.getObjectUrl( "/#prefix#/test.png" );
+				expect( objUrl contains "amazonaws.com" ).toBeTrue();
+				http url=objUrl timeout=10 result="result";
+				expect( Val( result.statuscode ) ).toBe( 200 );
+				expect( isBinary( result.filecontent ) ).toBeTrue();
+				expect( Len( result.filecontent ) ).toBe( 4255 );
+			} );
+
+			it( "should put object into S3 where it is not publically accessible (when private=true)", function(){
+				var svc = _getService();
+				var prefix = CreateUUId();
+				var sourceFile = FileReadBinary( ExpandPath( "/tests/fixtures/test.png" ) );
+
+				svc.putObject( object=sourceFile, path="/#prefix#/test.png", private=true );
+				var objUrl = Replace( svc.getObjectUrl( "/#prefix#/test.png" ), "/public/", "/private/" );
+
+				expect( objUrl contains "amazonaws.com" ).toBeTrue();
+				http url=objUrl timeout=10 result="result";
+				expect( Val( result.statuscode ) ).toBe( 403 );
+				expect( result.filecontent contains "access denied" ).toBeTrue();
+			} );
+		} );
+
+		describe( "moveObject", function(){
+			it( "should move objects between public source and destination paths", function(){
+				var svc = _getService();
+				var prefix = CreateUUId();
+				var sourceFile = ExpandPath( "/tests/fixtures/test.png" );
+				var sourcePath = "/#prefix#/test.png";
+				var targetPath = "/#prefix#/#CreateUUId()#.png";
+
+				svc.putObjectFromLocalPath( localPath=sourceFile, path=sourcePath, private=false );
+
+				expect( svc.objectExists( sourcePath ) ).toBe( true );
+				expect( svc.objectExists( targetPath ) ).toBe( false );
+
+				svc.moveObject( "/#prefix#/test.png", targetPath )
+
+				expect( svc.objectExists( sourcePath ) ).toBe( false );
+				expect( svc.objectExists( targetPath ) ).toBe( true );
+
+				var objUrl = svc.getObjectUrl( targetPath );
+
+				expect( objUrl contains "amazonaws.com" ).toBeTrue();
+				http url=objUrl timeout=10 result="result";
+				expect( Val( result.statuscode ) ).toBe( 200 );
+			} );
+
+			it( "should move objects from private source to public destination paths", function(){
+				var svc = _getService();
+				var prefix = CreateUUId();
+				var sourceFile = ExpandPath( "/tests/fixtures/test.png" );
+				var sourcePath = "/#prefix#/test.png";
+				var targetPath = "/#prefix#/#CreateUUId()#.png";
+
+				svc.putObjectFromLocalPath( localPath=sourceFile, path=sourcePath, private=true );
+
+				expect( svc.objectExists( path=sourcePath, private=true ) ).toBe( true );
+				expect( svc.objectExists( targetPath ) ).toBe( false );
+
+				svc.moveObject(
+					  originalPath      = "/#prefix#/test.png"
+					, newPath           = targetPath
+					, originalIsPrivate = true
+					, newIsPrivate      = false
+				);
+
+				expect( svc.objectExists( path=sourcePath, private=true ) ).toBe( false );
+				expect( svc.objectExists( targetPath ) ).toBe( true );
+
+				var objUrl = svc.getObjectUrl( targetPath );
+
+				expect( objUrl contains "amazonaws.com" ).toBeTrue();
+				http url=objUrl timeout=10 result="result";
+				expect( Val( result.statuscode ) ).toBe( 200 );
+			} );
+
+			it( "should move objects from public source to private destination paths", function(){
+				var svc = _getService();
+				var prefix = CreateUUId();
+				var sourceFile = ExpandPath( "/tests/fixtures/test.png" );
+				var sourcePath = "/#prefix#/test.png";
+				var targetPath = "/#prefix#/#CreateUUId()#.png";
+
+				svc.putObjectFromLocalPath( localPath=sourceFile, path=sourcePath );
+
+				expect( svc.objectExists( path=sourcePath, private=false ) ).toBe( true );
+				expect( svc.objectExists( path=targetPath, private=true ) ).toBe( false );
+
+				svc.moveObject(
+					  originalPath      = "/#prefix#/test.png"
+					, newPath           = targetPath
+					, originalIsPrivate = false
+					, newIsPrivate      = true
+				);
+
+				expect( svc.objectExists( path=sourcePath, private=false ) ).toBe( false );
+				expect( svc.objectExists( path=targetPath, private=true ) ).toBe( true );
+
+				var objUrl = Replace( svc.getObjectUrl( targetPath ), "/public/", "/private/" );
+
+				expect( objUrl contains "amazonaws.com" ).toBeTrue();
+				http url=objUrl timeout=10 result="result";
+				expect( Val( result.statuscode ) ).toBe( 403 );
+			} );
+		} );
+
+		describe( "softDeleteObject", function(){
+			it( "should move the provided object to the .trash folder", function(){
+				var svc = _getService();
+				var prefix = CreateUUId();
+				var sourceFile = ExpandPath( "/tests/fixtures/test.png" );
+				var sourcePath = "/#prefix#/test.png";
+
+				svc.putObjectFromLocalPath( localPath=sourceFile, path=sourcePath );
+
+				expect( svc.objectExists( path=sourcePath, private=false ) ).toBe( true );
+
+				svc.softDeleteObject( sourcePath );
+
+				expect( svc.objectExists( path=sourcePath, private=false ) ).toBe( false );
+				expect( svc.objectExists( path=sourcePath, trashed=true ) ).toBe( true );
+
+				var objUrl = Replace( svc.getObjectUrl( sourcePath ), "/public/", "/.trash/" );
+
+				expect( objUrl contains "amazonaws.com" ).toBeTrue();
+				http url=objUrl timeout=10 result="result";
+				expect( Val( result.statuscode ) ).toBe( 403 );
+			} );
+		} );
+
+		describe( "restoreObject", function(){
+			it( "should move the provided object out of the .trash folder into the target path", function(){
+				var svc = _getService();
+				var prefix = CreateUUId();
+				var sourceFile = ExpandPath( "/tests/fixtures/test.png" );
+				var sourcePath = "/#prefix#/test.png";
+				var newPath = "/#prefix#/test.png";
+
+				svc.putObjectFromLocalPath( localPath=sourceFile, path=sourcePath );
+
+				expect( svc.objectExists( path=sourcePath, private=false ) ).toBe( true );
+
+				svc.softDeleteObject( sourcePath );
+
+				expect( svc.objectExists( path=sourcePath, private=false ) ).toBe( false );
+				expect( svc.objectExists( path=sourcePath, trashed=true ) ).toBe( true );
+
+				svc.restoreObject( trashedPath=sourcePath, newPath=newPath, private=false );
+
+				expect( svc.objectExists( path=sourcePath, private=false ) ).toBe( true );
+				expect( svc.objectExists( path=sourcePath, trashed=true ) ).toBe( false );
+
+				var objUrl = svc.getObjectUrl( sourcePath );
+
+				expect( objUrl contains "amazonaws.com" ).toBeTrue();
+				http url=objUrl timeout=10 result="result";
+				expect( Val( result.statuscode ) ).toBe( 200 );
+			} );
+		} );
+
+		_cleanup();
 	}
 
 // HELPERS
@@ -229,6 +479,7 @@ debug( result )
 
 		cache.$( "get" );
 		cache.$( "lookupQuiet", false );
+		cache.$( "clearQuiet" );
 		cache.$( "getObjectStore", objStore );
 		objStore.$( method="getCacheFilePath", callBack=function( key ){
 			return GetTempDirectory() & Hash( arguments.key ) & ".cache";
@@ -243,8 +494,10 @@ debug( result )
 		} );
 
 		svc.$( "_getCache", cache );
+		svc.$( "_getDispositionAndMimeType" ).$args( "png" ).$results( { disposition="inline", mimetype="image/png" } );
+		svc.$( "_getDispositionAndMimeType" ).$args( "jpg" ).$results( { disposition="inline", mimetype="image/jpg" } );
+		svc.$( "_getDispositionAndMimeType" ).$args( "pdf" ).$results( { disposition="attachment", mimetype="application/pdf" } );
 
 		return svc;
 	}
-
 }
