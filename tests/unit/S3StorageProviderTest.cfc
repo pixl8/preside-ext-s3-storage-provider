@@ -455,8 +455,6 @@ component extends="testbox.system.BaseSpec" {
 				expect( Val( result.statuscode ) ).toBe( 200 );
 			} );
 		} );
-
-		_cleanup();
 	}
 
 // HELPERS
