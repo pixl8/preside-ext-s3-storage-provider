@@ -277,28 +277,6 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 		}
 	}
 
-	private any function _getAcl( required boolean private, boolean trashed=false ) {
-		var acl = _getS3Service().getBucketAcl( _getBucketObject() );
-
-		if ( arguments.private || arguments.trashed ) {
-			acl.revokeAllPermissions( _getPublicGroup() );
-		} else {
-			acl.grantPermission( _getPublicGroup(), _getReadPermission() );
-		}
-
-		return acl;
-	}
-
-	private any function _getStorageClass( required any s3Object, required boolean private, boolean trashed=false ) {
-		// TODO, make this configurable
-
-		if ( arguments.trashed ) {
-			return s3Object.STORAGE_CLASS_REDUCED_REDUNDANCY;
-		}
-
-		return s3Object.STORAGE_CLASS_STANDARD;
-	}
-
 	private any function _getCache() {
 		if ( !StructKeyExists( variables, "_cache" ) ) {
 			if ( StructKeyExists( application, "cbBootstrap" ) && IsDefined( 'application.cbBootstrap.getController' ) ) {
@@ -388,64 +366,12 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 		return result;
 	}
 
-	private void function _putS3Object(
-		  required any     s3Object
-		, required string  path
-		, required boolean private
-	) {
-		var dispositionAndMimeType = _getDispositionAndMimeType( ListLast( arguments.path, "." ) );
-
-		arguments.s3Object.setAcl( _getAcl( argumentCollection=arguments ) );
-		arguments.s3Object.setStorageClass( _getStorageClass( argumentCollection=arguments ) );
-
-		if ( StructCount( dispositionAndMimeType ) ) {
-			if ( dispositionAndMimeType.disposition == "attachment" ) {
-				arguments.s3Object.setContentDisposition( dispositionAndMimeType.disposition & "; filename=""#ListLast( arguments.path, "\/" )#""" );
-			}
-			arguments.s3Object.setContentType( dispositionAndMimeType.mimeType );
-		}
-
-		_getS3Service().putObject( _getBucket(), arguments.s3Object );
-	}
-
-	private any function _s3ObjFromBinary( required binary object, required string s3key ) {
-		var s3Object = CreateObject( "java", "org.jets3t.service.model.S3Object" ).init( arguments.s3key, arguments.object );
-
-		return s3Object;
-	}
-
-	private string function _tmpFile( required any object ) {
-		var tmpFile = GetTempFile( GetTempDirectory(), "" );
-
-		FileWrite( tmpFile, arguments.object );
-
-		return tmpFile;
-	}
-
-	private void function _deleteFile( required string path ) {
-		try {
-			FileDelete( arguments.path )
-		} catch( any e ) {
-			if ( FileExists( arguments.path ) ) {
-				rethrow;
-			}
-		}
-	}
-
 // GETTERS AND SETTERS
 	private string function _getBucket() {
 		return _bucket;
 	}
 	private void function _setBucket( required string bucket ) {
 		_bucket = arguments.bucket;
-		_setBucketObject( CreateObject( "java", "org.jets3t.service.model.S3Bucket" ).init( _bucket ) );
-	}
-
-	private any function _getBucketObject() {
-		return _bucketObject;
-	}
-	private void function _setBucketObject( required any bucketObject ) {
-		_bucketObject = arguments.bucketObject;
 	}
 
 	private string function _getRegion() {
