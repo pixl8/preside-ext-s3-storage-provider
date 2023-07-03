@@ -46,9 +46,9 @@ public class Service {
 
 	/**
 	 * Returns true if there are no errors making an API call to get the configured
-	 * bucket's location AND if the bucket's location matches our configured region.
+	 * bucket
 	 */
-	public boolean validateConnection() {
+	public boolean checkBucketAccess() {
 		try {
 			GetBucketLocationResponse resp = _s3Client.getBucketLocation( GetBucketLocationRequest.builder().bucket( _bucket ).build() );
 			return resp.locationConstraintAsString().equals( _region );
@@ -139,24 +139,24 @@ public class Service {
 	 * Put an object into the bucket from a local file. This is the preferred performant method.
 	 *
 	 */
-	public void putObject( String key, String localFilePath, String mimetype, boolean isPrivate, boolean isTrashed ) {
-		_s3Client.putObject( _buildPutObjectRequest( key, mimetype, isPrivate, isTrashed ), Paths.get( localFilePath ) );
+	public void putObject( String key, String localFilePath, String mimetype, String disposition, boolean isPrivate, boolean isTrashed ) {
+		_s3Client.putObject( _buildPutObjectRequest( key, mimetype, disposition, isPrivate, isTrashed ), Paths.get( localFilePath ) );
 	}
 
 	/**
 	 * Put an object into the bucket from a binary byte array. This is not the preferred method.
 	 *
 	 */
-	public void putObject( String key, byte[] bytes, String mimetype, boolean isPrivate, boolean isTrashed ) {
-		_s3Client.putObject( _buildPutObjectRequest( key, mimetype, isPrivate, isTrashed ), RequestBody.fromBytes( bytes ) );
+	public void putObject( String key, byte[] bytes, String mimetype, String disposition, boolean isPrivate, boolean isTrashed ) {
+		_s3Client.putObject( _buildPutObjectRequest( key, mimetype, disposition, isPrivate, isTrashed ), RequestBody.fromBytes( bytes ) );
 	}
 
 	/**
 	 * Moves an object from one location to another
 	 * with new permissions based on whether private and trashed
 	 */
-	public void moveObject( String sourceKey, String targetKey, String mimetype, boolean isPrivate, boolean isTrashed ) {
-		_s3Client.copyObject( _buildCopyObjectRequest( sourceKey, targetKey, mimetype, isPrivate, isTrashed ) );
+	public void moveObject( String sourceKey, String targetKey, String mimetype, String disposition, boolean isPrivate, boolean isTrashed ) {
+		_s3Client.copyObject( _buildCopyObjectRequest( sourceKey, targetKey, mimetype, disposition, isPrivate, isTrashed ) );
 		deleteObject( sourceKey );
 	}
 
@@ -165,23 +165,25 @@ public class Service {
 		return GetObjectRequest.builder().key( key ).bucket( _bucket ).build();
 	}
 
-	private PutObjectRequest _buildPutObjectRequest( String key, String mimetype, boolean isPrivate, boolean isTrashed ) {
+	private PutObjectRequest _buildPutObjectRequest( String key, String mimetype, String disposition, boolean isPrivate, boolean isTrashed ) {
 		return PutObjectRequest.builder()
 		                       .bucket( _bucket )
 		                       .key( key )
 		                       .contentType( mimetype )
+		                       .contentDisposition( disposition )
 		                       .acl( ( isPrivate || isTrashed ) ? ObjectCannedACL.PRIVATE : ObjectCannedACL.PUBLIC_READ )
 		                       .storageClass( isTrashed ? StorageClass.REDUCED_REDUNDANCY : StorageClass.STANDARD )
 		                       .build();
 	}
 
-	private CopyObjectRequest _buildCopyObjectRequest( String sourceKey, String targetKey, String mimetype, boolean isPrivate, boolean isTrashed ) {
+	private CopyObjectRequest _buildCopyObjectRequest( String sourceKey, String targetKey, String mimetype, String disposition, boolean isPrivate, boolean isTrashed ) {
 		return CopyObjectRequest.builder()
 		                        .sourceBucket( _bucket )
 		                        .sourceKey( sourceKey )
 		                        .destinationBucket( _bucket )
 		                        .destinationKey( targetKey )
 		                        .contentType( mimetype )
+		                        .contentDisposition( disposition )
 		                        .acl( ( isPrivate || isTrashed ) ? ObjectCannedACL.PRIVATE : ObjectCannedACL.PUBLIC_READ )
 		                        .storageClass( isTrashed ? StorageClass.REDUCED_REDUNDANCY : StorageClass.STANDARD )
 		                        .build();

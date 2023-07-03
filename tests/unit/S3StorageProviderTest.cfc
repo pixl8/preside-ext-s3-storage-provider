@@ -492,9 +492,13 @@ component extends="testbox.system.BaseSpec" {
 		} );
 
 		svc.$( "_getCache", cache );
-		svc.$( "_getDispositionAndMimeType" ).$args( "png" ).$results( { disposition="inline", mimetype="image/png" } );
-		svc.$( "_getDispositionAndMimeType" ).$args( "jpg" ).$results( { disposition="inline", mimetype="image/jpg" } );
-		svc.$( "_getDispositionAndMimeType" ).$args( "pdf" ).$results( { disposition="attachment", mimetype="application/pdf" } );
+		svc.$( method="_getDispositionAndMimeType", callback=function( filename ){
+			var filetype = ListLast( arguments.filename, "." );
+			if ( filetype == "pdf" ) {
+				return { disposition="attachment; filename=""#arguments.filename#""", mimetype="application/pdf" };
+			}
+			return { disposition="inline", mimetype="image/#filetype#" };
+		} );
 
 		return svc;
 	}
