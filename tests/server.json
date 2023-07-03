@@ -1,0 +1,11 @@
+{
+    "name":"s3providertests",
+    "openBrowser":false,
+    "trayEnable":false,
+    "web":{
+        "webroot":"./",
+        "http":{
+            "port":"5353"
+        }
+    }
+}
