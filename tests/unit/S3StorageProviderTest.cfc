@@ -376,6 +376,7 @@ component extends="testbox.system.BaseSpec" {
 				var objUrl = svc.getObjectUrl( targetPath );
 
 				expect( objUrl contains "amazonaws.com" ).toBeTrue();
+				sleep( 200 );
 				http url=objUrl timeout=10 result="result";
 				expect( Val( result.statuscode ) ).toBe( 200 );
 			} );
@@ -405,6 +406,7 @@ component extends="testbox.system.BaseSpec" {
 				var objUrl = svc.getObjectUrl( targetPath );
 
 				expect( objUrl contains "amazonaws.com" ).toBeTrue();
+				sleep( 200 );
 				http url=objUrl timeout=10 result="result";
 				expect( Val( result.statuscode ) ).toBe( 200 );
 			} );
@@ -434,6 +436,7 @@ component extends="testbox.system.BaseSpec" {
 				var objUrl = Replace( svc.getObjectUrl( targetPath ), "/public/", "/private/" );
 
 				expect( objUrl contains "amazonaws.com" ).toBeTrue();
+				sleep( 200 );
 				http url=objUrl timeout=10 result="result";
 				expect( Val( result.statuscode ) ).toBe( 403 );
 			} );
