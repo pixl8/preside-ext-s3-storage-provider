@@ -49,16 +49,38 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 		var hasAccess = false;
 
 		try {
-			hasAccess = s3Service.checkBucketAccess();
+			hasAccess = s3Service.checkS3Access();
 		} catch( any e ) {
-			validationResult.addError( "s3accessKey", "storage-providers.s3:validation.connection.error" );
-			return;
+			hasAccess = false;
 		}
-
 		if ( !hasAccess ) {
 			validationResult.addError( "s3accessKey", "storage-providers.s3:validation.connection.error" );
 			return;
 		}
+
+		try {
+			hasAccess = s3Service.checkBucketRegion();
+		} catch( any e ) {
+			if ( e.message contains "the region '#( arguments.configuration.s3region ?: "" )#' is wrong" ) {
+				hasAccess = false;
+			}
+		}
+		if ( !hasAccess ) {
+			validationResult.addError( "s3region", "storage-providers.s3:validation.region.error" );
+			return;
+		}
+
+		try {
+			hasAccess = s3Service.checkBucketAccess();
+		} catch( any e ) {
+			hasAccess = false;
+		}
+		if ( !hasAccess ) {
+			validationResult.addError( "s3bucket", "storage-providers.s3:validation.bucket.error" );
+			return;
+		}
+
+
 	}
 
 	public query function listObjects( required string path, boolean private=false ){

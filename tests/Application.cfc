@@ -21,16 +21,15 @@ component {
 		if ( !StructKeyExists( application, "_credentialsVerified" ) || !application._credentialsVerified ) {
 			var env = CreateObject("java", "java.lang.System").getEnv();
 
-
 			application.TEST_S3_ACCESS_KEY = Trim( env.TEST_S3_ACCESS_KEY ?: "" );
 			application.TEST_S3_SECRET_KEY = Trim( env.TEST_S3_SECRET_KEY ?: "" );
 			application.TEST_S3_BUCKET     = Trim( env.TEST_S3_BUCKET     ?: "" );
 			application.TEST_S3_REGION     = Trim( env.TEST_S3_REGION     ?: "" );
 
 			application._credentialsVerified = Len( application.TEST_S3_ACCESS_KEY ) &&
-											   Len( application.TEST_S3_SECRET_KEY ) &&
-											   Len( application.TEST_S3_BUCKET     ) &&
-											   Len( application.TEST_S3_REGION     );
+			                                   Len( application.TEST_S3_SECRET_KEY ) &&
+			                                   Len( application.TEST_S3_BUCKET     ) &&
+			                                   Len( application.TEST_S3_REGION     );
 		}
 
 		header statuscode=500;

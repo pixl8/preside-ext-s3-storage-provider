@@ -4,7 +4,7 @@
 	<artifactId>s3storageprovider</artifactId>
 	<packaging>jar</packaging>
 	<version>1.0.0</version>
-	<name>Lucee Undertow Server</name>
+	<name>S3 Storage Provider AWS service for Preside</name>
 	<url>http://maven.apache.org</url>
 
 	<dependencyManagement>

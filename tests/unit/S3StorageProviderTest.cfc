@@ -6,11 +6,48 @@ component extends="testbox.system.BaseSpec" {
 				var svc = _getService();
 				var validationResult = new preside.system.services.validation.ValidationResult();
 
-				svc.validate( { s3accessKey="xxx", s3secretKey="xxx" }, validationResult );
+				svc.validate( {
+					  s3accessKey="xxx"
+					, s3secretKey="xxx"
+				}, validationResult );
 
 				var messages = validationResult.getMessages();
 
 				expect( messages.s3accesskey.message ?: "" ).toBe( "storage-providers.s3:validation.connection.error" );
+			} );
+			it( "should add a validation error when the credentials are correct but the bucket does not exist (or user does not have access)", function(){
+				var svc = _getService();
+				var validationResult = new preside.system.services.validation.ValidationResult();
+
+				svc.validate( {
+					  s3accessKey = application.TEST_S3_ACCESS_KEY
+					, s3secretKey = application.TEST_S3_SECRET_KEY
+					, s3Bucket    = CreateUUId()
+				}, validationResult );
+
+				var messages = validationResult.getMessages();
+
+				expect( messages.s3bucket.message ?: "" ).toBe( "storage-providers.s3:validation.bucket.error" );
+			} );
+			it( "should add a validation error when the credentials are correct but the bucket region is different to the configured region", function(){
+				var svc = _getService();
+				var validationResult = new preside.system.services.validation.ValidationResult();
+				var dummyRegion = "us-east-1";
+
+				if ( dummyRegion == application.TEST_S3_REGION ) {
+					dummyRegion = "eu-west-1";
+				}
+
+				svc.validate( {
+					  s3accessKey = application.TEST_S3_ACCESS_KEY
+					, s3secretKey = application.TEST_S3_SECRET_KEY
+					, s3Bucket    = application.TEST_S3_BUCKET
+					, s3Region    = dummyRegion
+				}, validationResult );
+
+				var messages = validationResult.getMessages();
+
+				expect( messages.s3region.message ?: "" ).toBe( "storage-providers.s3:validation.region.error" );
 			} );
 			it( "should do nothing when credentials are correct", function(){
 				var svc = _getService();

@@ -44,22 +44,46 @@ public class Service {
 		                    .build();
 	}
 
+
 	/**
 	 * Returns true if there are no errors making an API call to get the configured
 	 * bucket
 	 */
+	public boolean checkS3Access() {
+		try {
+			_s3Client.listBuckets();
+		} catch( Exception e ) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Returns true if there are no errors making an head API call to the bucket
+	 */
 	public boolean checkBucketAccess() {
 		try {
-			GetBucketLocationResponse resp = _s3Client.getBucketLocation( GetBucketLocationRequest.builder().bucket( _bucket ).build() );
-			return resp.locationConstraintAsString().equals( _region );
-		} catch( Exception e ) {}
+			_s3Client.headBucket( HeadBucketRequest.builder().bucket( _bucket ).build() );
+		} catch( Exception e ) {
+			return false;
+		}
 
-		return false;
+		return true;
+	}
+
+	/**
+	 * Returns true if there are no errors making an API call to get the configured
+	 * bucket and that the bucket
+	 */
+	public boolean checkBucketRegion() {
+		GetBucketLocationResponse resp = _s3Client.getBucketLocation( GetBucketLocationRequest.builder().bucket( _bucket ).build() );
+		return resp.locationConstraintAsString().equals( _region );
 	}
 
 	/**
 	 * Returns a cfquery result of objects matching the provided
-	 * prefix. This ensures no converstion necessary from CFML code
+	 * prefix. This ensures no conversion necessary from CFML code
 	 * after calling this java method.
 	 *
 	 */
