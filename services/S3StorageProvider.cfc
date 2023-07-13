@@ -28,7 +28,7 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 		_setTrashDirectory( arguments.s3subpath & arguments.s3trashRootPath );
 
 		if ( !StructKeyExists( arguments, "s3rootUrl" ) ) {
-			arguments.s3RootUrl = "https://s3-#arguments.s3region#.amazonaws.com/#arguments.s3Bucket##_getPublicDirectory()#";
+			arguments.s3RootUrl = "https://s3.#arguments.s3region#.amazonaws.com/#arguments.s3Bucket##_getPublicDirectory()#";
 		}
 
 		_setRootUrl( arguments.s3rootUrl );
