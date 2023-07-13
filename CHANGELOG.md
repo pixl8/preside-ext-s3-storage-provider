@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.5
+
+* Use non-legacy URLs and endpoints for assets. i.e. s3.regioncode.amazonaws.com and NOT s3-regioncode.amazonaws.com
+
 ## 1.0.4
 
 * [#10](https://github.com/pixl8/preside-ext-s3-storage-provider/issues/10) fix for bad `$raiseError()` function call that was not wanted in the first place
