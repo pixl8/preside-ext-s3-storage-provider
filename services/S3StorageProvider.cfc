@@ -32,7 +32,7 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 		_setCliPath( arguments.cliPath );
 
 		if ( !StructKeyExists( arguments, "s3rootUrl" ) ) {
-			arguments.s3RootUrl = "https://s3-#arguments.s3region#.amazonaws.com/#arguments.s3Bucket##_getPublicDirectory()#";
+			arguments.s3RootUrl = "https://s3.#arguments.s3region#.amazonaws.com/#arguments.s3Bucket##_getPublicDirectory()#";
 		}
 
 
@@ -357,7 +357,7 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 		var credentials = CreateObject( "java", "org.jets3t.service.security.AWSCredentials" ).init( arguments.accessKey, arguments.secretKey );
 		var props       = CreateObject( "java", "org.jets3t.service.Jets3tProperties" ).init();
 
-		props.setProperty( "s3service.s3-endpoint", "s3-#arguments.region#.amazonaws.com" );
+		props.setProperty( "s3service.s3-endpoint", "s3.#arguments.region#.amazonaws.com" );
 
 		return CreateObject( "java", "org.jets3t.service.impl.rest.httpclient.RestS3Service" ).init( credentials, NullValue(), NullValue(), props );
 	}
