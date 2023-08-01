@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.0.0
+
+* Rewrite java interactions to use an isolated OSGi bundle, disassociating the extension with specific Lucee libraries and allowing usage with multiple versions of Lucee.
+
 ## 1.0.5
 
 * Use non-legacy URLs and endpoints for assets. i.e. s3.regioncode.amazonaws.com and NOT s3-regioncode.amazonaws.com
