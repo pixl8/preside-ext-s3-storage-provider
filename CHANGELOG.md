@@ -1,8 +1,12 @@
 # Changelog
 
+## 2.1.0
+
+* [#13](https://github.com/pixl8/preside-ext-s3-storage-provider/issues/13) Add a getTemporaryPrivateObjectUrl() method for getting presigned URLs for private objects
+
 ## 2.0.0
 
-* Rewrite java interactions to use an isolated OSGi bundle, disassociating the extension with specific Lucee libraries and allowing usage with multiple versions of Lucee.
+* [#12](https://github.com/pixl8/preside-ext-s3-storage-provider/issues/12) Rewrite java interactions to use an isolated OSGi bundle, disassociating the extension with specific Lucee libraries and allowing usage with multiple versions of Lucee.
 
 ## 1.0.5
 

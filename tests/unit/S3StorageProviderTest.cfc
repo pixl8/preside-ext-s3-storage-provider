@@ -495,6 +495,32 @@ component extends="testbox.system.BaseSpec" {
 				expect( Val( result.statuscode ) ).toBe( 200 );
 			} );
 		} );
+
+		describe( "getTemporaryPrivateObjectUrl", function(){
+			it( "should provide a temporary URL for downloading otherwise private access objects", function(){
+				var svc = _getService();
+				var prefix = CreateUUId();
+				var sourceFile = FileReadBinary( ExpandPath( "/tests/fixtures/test.png" ) );
+
+				svc.putObject( object=sourceFile, path="/#prefix#/test.png", private=true );
+				var objUrl = Replace( svc.getObjectUrl( "/#prefix#/test.png" ), "/public/", "/private/" );
+
+				expect( objUrl contains "amazonaws.com" ).toBeTrue();
+				http url=objUrl timeout=10 result="result";
+				expect( Val( result.statuscode ) ).toBe( 403 );
+				expect( result.filecontent contains "access denied" ).toBeTrue();
+
+				objUrl = svc.getTemporaryPrivateObjectUrl( "/#prefix#/test.png" );
+
+				expect( objUrl contains "amazonaws.com" ).toBeTrue();
+				http url=objUrl timeout=10 result="result";
+				debug( objUrl );
+				debug( result );
+				expect( Val( result.statuscode ) ).toBe( 200 );
+				expect( isBinary( result.filecontent ) ).toBeTrue();
+				expect( Len( result.filecontent ) ).toBe( 4255 );
+			} );
+		} );
 	}
 
 // HELPERS

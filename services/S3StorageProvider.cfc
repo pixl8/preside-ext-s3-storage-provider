@@ -237,6 +237,10 @@ component implements="preside.system.services.fileStorage.StorageProvider" displ
 		return "";
 	}
 
+	public string function getTemporaryPrivateObjectUrl( required string path, numeric timeoutInMinutes=5 ) {
+		return _getS3Service().getPresignedUrl( _expandPath( argumentCollection=arguments, private=true ), JavaCast( "long", arguments.timeoutInMinutes ) );
+	}
+
 // PRIVATE HELPERS
 	private void function _setupS3Service(
 		  required string accessKey
