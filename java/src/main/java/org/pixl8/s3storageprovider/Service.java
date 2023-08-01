@@ -5,7 +5,10 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.auth.credentials.*;
 import software.amazon.awssdk.services.s3.model.*;
 import software.amazon.awssdk.services.s3.paginators.*;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.*;
 import software.amazon.awssdk.core.sync.RequestBody;
+
 import java.nio.file.Paths;
 import lucee.runtime.type.Query;
 import lucee.runtime.type.Struct;
@@ -14,6 +17,7 @@ import lucee.runtime.exp.PageException;
 import java.util.Date;
 import java.util.List;
 import java.io.File;
+import java.time.Duration;
 
 /**
  * This is a private service for our Lucee CFML Preside Storage
@@ -25,9 +29,10 @@ import java.io.File;
  */
 public class Service {
 
-	private S3Client _s3Client;
-	private String   _bucket;
-	private String   _region;
+	private S3Client    _s3Client;
+	private String      _bucket;
+	private String      _region;
+	private S3Presigner _preSigner;
 
 	/**
 	 * Our simple service constructor takes region, bucket, accesskey and secret key.
@@ -36,12 +41,18 @@ public class Service {
 	 *
 	 */
 	public Service( String region, String bucket, String accessKey, String secretKey ) {
-		_bucket   = bucket;
-		_region   = region;
-		_s3Client = S3Client.builder()
-		                    .region( Region.of( _region ) )
-		                    .credentialsProvider( StaticCredentialsProvider.create( AwsBasicCredentials.create( accessKey, secretKey ) ) )
-		                    .build();
+		AwsCredentialsProvider creds = StaticCredentialsProvider.create( AwsBasicCredentials.create( accessKey, secretKey ) );
+
+		_bucket    = bucket;
+		_region    = region;
+		_s3Client  = S3Client.builder()
+		                     .region( Region.of( _region ) )
+		                     .credentialsProvider( creds )
+		                     .build();
+		_preSigner = S3Presigner.builder()
+		                        .credentialsProvider( creds )
+		                        .region( Region.of( _region ) )
+		                        .build();
 	}
 
 
@@ -182,6 +193,15 @@ public class Service {
 	public void moveObject( String sourceKey, String targetKey, String mimetype, String disposition, boolean isPrivate, boolean isTrashed ) {
 		_s3Client.copyObject( _buildCopyObjectRequest( sourceKey, targetKey, mimetype, disposition, isPrivate, isTrashed ) );
 		deleteObject( sourceKey );
+	}
+
+	public String getPresignedUrl( String objectKey, long durationInMinutes ) {
+		GetObjectPresignRequest req = GetObjectPresignRequest.builder()
+		                                                     .getObjectRequest( _buildGetObjectRequest( objectKey ) )
+		                                                     .signatureDuration( Duration.ofMinutes( durationInMinutes ) )
+		                                                     .build();
+
+		return _preSigner.presignGetObject( req ).url().toString();
 	}
 
 // PRIVATE HELPERS
