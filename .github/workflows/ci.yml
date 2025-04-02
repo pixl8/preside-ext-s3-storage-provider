@@ -4,7 +4,7 @@ on:
   pull_request:
 jobs:
   ci:
-    name: CI for Preside Data API extension
+    name: CI for S3 Storage Provider
     runs-on: ubuntu-latest
     steps:
       - name: Setup flow variables
@@ -58,7 +58,7 @@ jobs:
           TEST_S3_REGION: ${{ secrets.TEST_S3_REGION }}
 
       - name: Upload test results
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v4
         with:
           name: test-results
           path: tests/test-results.txt

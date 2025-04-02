@@ -228,6 +228,7 @@ public class Service {
 		                        .destinationKey( targetKey )
 		                        .contentType( mimetype )
 		                        .contentDisposition( disposition )
+		                        .metadataDirective( "REPLACE" )
 		                        .acl( ( isPrivate || isTrashed ) ? ObjectCannedACL.PRIVATE : ObjectCannedACL.PUBLIC_READ )
 		                        .storageClass( isTrashed ? StorageClass.REDUCED_REDUNDANCY : StorageClass.STANDARD )
 		                        .build();
