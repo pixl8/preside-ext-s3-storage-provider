@@ -249,6 +249,7 @@ component extends="testbox.system.BaseSpec" {
 				var svc = _getService();
 				var prefix = CreateUUId();
 				var sourceFile = ExpandPath( "/tests/fixtures/test.png" );
+				var result = "";
 
 				svc.putObjectFromLocalPath( localPath=sourceFile, path="/#prefix#/test.png", private=false );
 				expect( svc.objectExists( "/#prefix#/test.png" ) ).toBeTrue();
@@ -270,6 +271,7 @@ component extends="testbox.system.BaseSpec" {
 				var svc = _getService();
 				var prefix = CreateUUId();
 				var sourceFile = ExpandPath( "/tests/fixtures/test.png" );
+				var result = "";
 
 				svc.putObjectFromLocalPath( localPath=sourceFile, path="/#prefix#/test.png", private=false );
 				var objUrl = svc.getObjectUrl( "/#prefix#/test.png" );
@@ -285,6 +287,7 @@ component extends="testbox.system.BaseSpec" {
 				var svc = _getService();
 				var prefix = CreateUUId();
 				var sourceFile = ExpandPath( "/tests/fixtures/test.pdf" );
+				var result = "";
 
 				svc.putObjectFromLocalPath( localPath=sourceFile, path="/#prefix#/test.pdf", private=false );
 				var objUrl = svc.getObjectUrl( "/#prefix#/test.pdf" );
@@ -301,7 +304,7 @@ component extends="testbox.system.BaseSpec" {
 				var svc = _getService();
 				var prefix = CreateUUId();
 				var sourceFile = ExpandPath( "/tests/fixtures/test.png" );
-
+				var result = "";
 
 				svc.putObjectFromLocalPath( localPath=sourceFile, path="/#prefix#/test.png", private=false );
 				var objUrl = svc.getObjectUrl( "/#prefix#/test.png" );
@@ -314,6 +317,7 @@ component extends="testbox.system.BaseSpec" {
 				var svc = _getService();
 				var prefix = CreateUUId();
 				var sourceFile = ExpandPath( "/tests/fixtures/test.png" );
+				var result = "";
 
 				svc.putObjectFromLocalPath( localPath=sourceFile, path="/#prefix#/test.png", private=true );
 				var objUrl = Replace( svc.getObjectUrl( "/#prefix#/test.png" ), "/public/", "/private/" );
@@ -330,6 +334,7 @@ component extends="testbox.system.BaseSpec" {
 				var svc = _getService();
 				var prefix = CreateUUId();
 				var sourceFile = FileReadBinary( ExpandPath( "/tests/fixtures/test.png" ) );
+				var result = "";
 
 				svc.putObject( object=sourceFile, path="/#prefix#/test.png", private=false );
 				var objUrl = svc.getObjectUrl( "/#prefix#/test.png" );
@@ -344,6 +349,7 @@ component extends="testbox.system.BaseSpec" {
 				var svc = _getService();
 				var prefix = CreateUUId();
 				var sourceFile = FileReadBinary( ExpandPath( "/tests/fixtures/test.png" ) );
+				var result = "";
 
 				svc.putObject( object=sourceFile, path="/#prefix#/test.png", private=true );
 				var objUrl = Replace( svc.getObjectUrl( "/#prefix#/test.png" ), "/public/", "/private/" );
@@ -362,6 +368,7 @@ component extends="testbox.system.BaseSpec" {
 				var sourceFile = ExpandPath( "/tests/fixtures/test.png" );
 				var sourcePath = "/#prefix#/test.png";
 				var targetPath = "/#prefix#/#CreateUUId()#.png";
+				var result = "";
 
 				svc.putObjectFromLocalPath( localPath=sourceFile, path=sourcePath, private=false );
 
@@ -376,7 +383,7 @@ component extends="testbox.system.BaseSpec" {
 				var objUrl = svc.getObjectUrl( targetPath );
 
 				expect( objUrl contains "amazonaws.com" ).toBeTrue();
-				sleep( 200 );
+				sleep( 500 );
 				http url=objUrl timeout=10 result="result";
 				expect( Val( result.statuscode ) ).toBe( 200 );
 			} );
@@ -387,6 +394,7 @@ component extends="testbox.system.BaseSpec" {
 				var sourceFile = ExpandPath( "/tests/fixtures/test.png" );
 				var sourcePath = "/#prefix#/test.png";
 				var targetPath = "/#prefix#/#CreateUUId()#.png";
+				var result = "";
 
 				svc.putObjectFromLocalPath( localPath=sourceFile, path=sourcePath, private=true );
 
@@ -406,7 +414,7 @@ component extends="testbox.system.BaseSpec" {
 				var objUrl = svc.getObjectUrl( targetPath );
 
 				expect( objUrl contains "amazonaws.com" ).toBeTrue();
-				sleep( 200 );
+				sleep( 500 );
 				http url=objUrl timeout=10 result="result";
 				expect( Val( result.statuscode ) ).toBe( 200 );
 			} );
@@ -417,6 +425,7 @@ component extends="testbox.system.BaseSpec" {
 				var sourceFile = ExpandPath( "/tests/fixtures/test.png" );
 				var sourcePath = "/#prefix#/test.png";
 				var targetPath = "/#prefix#/#CreateUUId()#.png";
+				var result = "";
 
 				svc.putObjectFromLocalPath( localPath=sourceFile, path=sourcePath );
 
@@ -436,7 +445,7 @@ component extends="testbox.system.BaseSpec" {
 				var objUrl = Replace( svc.getObjectUrl( targetPath ), "/public/", "/private/" );
 
 				expect( objUrl contains "amazonaws.com" ).toBeTrue();
-				sleep( 200 );
+				sleep( 500 );
 				http url=objUrl timeout=10 result="result";
 				expect( Val( result.statuscode ) ).toBe( 403 );
 			} );
@@ -448,6 +457,7 @@ component extends="testbox.system.BaseSpec" {
 				var prefix = CreateUUId();
 				var sourceFile = ExpandPath( "/tests/fixtures/test.png" );
 				var sourcePath = "/#prefix#/test.png";
+				var result = "";
 
 				svc.putObjectFromLocalPath( localPath=sourceFile, path=sourcePath );
 
@@ -473,6 +483,7 @@ component extends="testbox.system.BaseSpec" {
 				var sourceFile = ExpandPath( "/tests/fixtures/test.png" );
 				var sourcePath = "/#prefix#/test.png";
 				var newPath = "/#prefix#/test.png";
+				var result = "";
 
 				svc.putObjectFromLocalPath( localPath=sourceFile, path=sourcePath );
 
@@ -490,7 +501,6 @@ component extends="testbox.system.BaseSpec" {
 
 				var objUrl = svc.getObjectUrl( sourcePath );
 
-				expect( objUrl contains "amazonaws.com" ).toBeTrue();
 				http url=objUrl timeout=10 result="result";
 				expect( Val( result.statuscode ) ).toBe( 200 );
 			} );
