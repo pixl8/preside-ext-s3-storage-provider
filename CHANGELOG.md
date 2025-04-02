@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.1.1
+
+* Fix issue with content-disposition not being preserved when moving objects
+
 ## 2.1.0
 
 * [#13](https://github.com/pixl8/preside-ext-s3-storage-provider/issues/13) Add a getTemporaryPrivateObjectUrl() method for getting presigned URLs for private objects
