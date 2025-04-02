@@ -65,6 +65,7 @@
 
 			<plugin>
 				<artifactId>maven-antrun-plugin</artifactId>
+				<version>1.3</version>
 				<configuration>
 					<tasks>
 						<copy file="target/s3storageprovider-1.0.0-jar-with-dependencies.jar" tofile="artifacts/s3storageprovider-1.0.0.jar" />
