@@ -501,6 +501,7 @@ component extends="testbox.system.BaseSpec" {
 				var svc = _getService();
 				var prefix = CreateUUId();
 				var sourceFile = FileReadBinary( ExpandPath( "/tests/fixtures/test.png" ) );
+				var result = "";
 
 				svc.putObject( object=sourceFile, path="/#prefix#/test.png", private=true );
 				var objUrl = Replace( svc.getObjectUrl( "/#prefix#/test.png" ), "/public/", "/private/" );
